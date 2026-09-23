@@ -97,8 +97,9 @@ Todas as ferramentas empregadas são gratuitas e, com exceção dos serviços de
 		\hline
 		\textbf{Camada} & \textbf{Tecnologia} & \textbf{Justificativa} \\ \hline
 		Interface & React, TypeScript, Vite, Tailwind CSS, React Hook Form, Recharts & Componentização de formulários extensos \cite{parida2024}; gráficos dos painéis \\ \hline
-		Servidor principal & Node.js, Fastify, Prisma & Entrada e saída não bloqueante para requisições concorrentes \cite{parida2024} \\ \hline
-		Banco de dados & PostgreSQL 16, JSONB, \texttt{pgcrypto} & Integridade relacional com flexibilidade documental \cite{postgres-json}; criptografia de campos \\ \hline
+		Servidor principal & Node.js, Fastify, postgres.js & Entrada e saída não bloqueante para requisições concorrentes \cite{parida2024} \\ \hline
+		Banco de dados (evolução) & Migrações em SQL versionadas & Acesso direto a RLS, colunas geradas, \texttt{pgcrypto} e gatilhos \\ \hline
+		Banco de dados & PostgreSQL 17, JSONB, \texttt{pgcrypto} & Integridade relacional com flexibilidade documental \cite{postgres-json}; criptografia de campos \\ \hline
 		Serviço de IA & Python, FastAPI, faster-whisper, Ollama & Transcrição e estruturação executadas localmente \cite{fasterwhisper,ollama} \\ \hline
 		Serviço analítico & Python, Pandas, SciPy & Transformação e análise estatística de dados tabulares \cite{zalke2026} \\ \hline
 		Infraestrutura & Docker Compose, Caddy (HTTPS) & Implantação reprodutível no servidor da instituição \\ \hline
@@ -178,6 +179,8 @@ CREATE INDEX idx_ficha_dados ON ficha USING gin (dados jsonb_path_ops);
 
 A escolha entre o modelo híbrido e a normalização completa é avaliada experimentalmente (\autoref{sec:exp-tecnica}).
 
+O esquema do banco é definido por migrações em SQL, aplicadas em ordem e registradas em uma tabela de controle, e a API o acessa por consultas parametrizadas com a biblioteca postgres.js. Um mapeador objeto-relacional (ORM) foi considerado e descartado. Os requisitos de segurança dependem de recursos específicos do PostgreSQL: políticas de \textit{Row-Level Security}, colunas geradas a partir de JSONB, funções do \texttt{pgcrypto}, gatilhos de imutabilidade e papéis com privilégios distintos. Esses recursos ficam fora do modelo dos ORMs e acabariam escritos em SQL de qualquer forma, com o custo adicional de uma camada intermediária.
+
 \section{Segurança e conformidade com a LGPD}
 \label{sec:seguranca}
 
@@ -190,11 +193,12 @@ As medidas de segurança foram definidas a partir do marco legal (\autoref{sec:m
 	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
 		\hline
 		\textbf{Requisito} & \textbf{Implementação} \\ \hline
-		Autenticação & Senhas com Argon2id; sessão em \textit{cookie} \texttt{HttpOnly}, \texttt{Secure} e \texttt{SameSite}; bloqueio após tentativas sucessivas; segundo fator (TOTP) para professores \\ \hline
-		Controle de acesso & Controle por papéis (RBAC) na API e \textit{Row-Level Security} no PostgreSQL, restringindo cada aluno aos pacientes dos próprios atendimentos \\ \hline
+		Autenticação & Senhas com Argon2id (parâmetros recomendados pela OWASP); sessão em \textit{cookie} \texttt{HttpOnly}, \texttt{Secure} e \texttt{SameSite=Strict}, com o \textit{token} armazenado apenas como \textit{hash}; bloqueio por 15 minutos após cinco tentativas; mesma resposta para e-mail inexistente e senha incorreta. Segundo fator (TOTP) para professores previsto \\ \hline
+		Controle de acesso & Controle por papéis (RBAC) na API e \textit{Row-Level Security} no PostgreSQL. A API conecta com um papel que não é dono das tabelas e informa o usuário a cada transação. O aluno só enxerga os pacientes que cadastrou ou atendeu, o professor enxerga todos, e administrador e pesquisador não enxergam dados clínicos identificados \\ \hline
 		Confidencialidade em trânsito & HTTPS em todas as comunicações \\ \hline
 		Confidencialidade em repouso & Campos identificadores cifrados com \texttt{pgcrypto}; disco do servidor cifrado; segredos fora do repositório de código \\ \hline
-		Pseudonimização (LGPD, art.~13) & Esquema analítico com visões que substituem o identificador do paciente por um código HMAC com chave secreta mantida separadamente, faixas etárias em vez de datas e ausência de nome, documentos e contatos \\ \hline
+		Pseudonimização (LGPD, art.~13) & Esquema analítico com visões que substituem o identificador do paciente por um código HMAC com chave secreta mantida em esquema inacessível aos papéis de aplicação. As visões usam faixas etárias em vez de datas de nascimento, dias desde a primeira consulta em vez de datas, e omitem nome, documentos, contatos e todos os campos de texto livre \\ \hline
+		Integridade do prontuário & Gatilhos no banco impedem a alteração de fichas aprovadas e a exclusão de qualquer ficha; correções são registradas como adendos versionados \\ \hline
 		Anonimização em exportações & Exportação somente a partir do esquema analítico, com verificação de k-anonimato (k $\geq$ 5) nas combinações de atributos quase identificadores \\ \hline
 		Rastreabilidade & Trilha de auditoria de leituras e alterações, sem permissão de alteração ou exclusão para a aplicação \\ \hline
 		Minimização & Descarte do áudio após a transcrição; coleta restrita aos campos da ficha \\ \hline

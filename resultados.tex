@@ -81,7 +81,31 @@ A partir desse esquema, foi construído o modelo de dados híbrido da \autoref{f
 	\fonte{Os autores (2026).}
 \end{table}
 
-\todo{resultado da varredura OWASP ZAP (alertas por severidade, antes e depois), resultados dos testes de controle de acesso e cobertura de testes.}
+Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. A \autoref{tb:testes} resume os 73 testes da versão atual.
+
+\begin{table}[htbp]
+	\caption{Testes automatizados por componente}
+	\label{tb:testes}
+	\footnotesize
+	\centering
+	\begin{tabularx}{\textwidth}{|L{3.8cm}|Y|c|}
+		\hline
+		\textbf{Componente} & \textbf{O que é verificado} & \textbf{Testes} \\ \hline
+		Esquema da ficha & Validade, cobertura das questões 1 a 75, esquema derivado para a IA, completude & 26 \\ \hline
+		API: autenticação & Argon2id, \textit{cookie}, bloqueio, sessão, auditoria de acesso & 9 \\ \hline
+		API: controle de acesso & Matriz de papéis na API e \textit{Row-Level Security} diretamente no banco & 9 \\ \hline
+		API: pacientes & Cifragem dos dados pessoais, busca por CPF via HMAC, validação, auditoria & 6 \\ \hline
+		API: fichas & Fluxo de revisão, imutabilidade, adendos, colunas geradas, odontograma & 7 \\ \hline
+		API: esquema analítico & Isolamento do papel analítico, pseudônimos, ausência de textos livres & 5 \\ \hline
+		Gerador de casos sintéticos & Validade, reprodutibilidade e coerência clínica & 11 \\ \hline
+		\textbf{Total} & & \textbf{73} \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{table}
+
+Entre as propriedades verificadas estão as seguintes. Um aluno não obtém, nem pela API nem por consulta direta com o papel da aplicação, os pacientes de outro aluno. O administrador não enxerga pacientes, embora consulte a auditoria. Nem o dono das tabelas consegue alterar ou excluir uma ficha aprovada. O texto original do CPF, do telefone e do endereço não aparece no valor gravado. O papel analítico não tem acesso às tabelas identificadas nem ao segredo dos pseudônimos, e as visões analíticas não contêm o nome do paciente nem trechos de texto livre.
+
+\todo{resultado da varredura OWASP ZAP (alertas por severidade, antes e depois) e cobertura de testes.}
 
 \section{Experimento A: qualidade da estruturação automática}
 
