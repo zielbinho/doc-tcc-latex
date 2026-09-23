@@ -1,0 +1,19 @@
+# Arquivos gerados pela compilação (recrie com .\compilar.ps1)
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.lol
+*.loq
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+tcc.pdf

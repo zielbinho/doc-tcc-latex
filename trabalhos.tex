@@ -1,0 +1,70 @@
+\chapter{Trabalhos relacionados}
+\label{cap:trabalhos}
+
+A transição digital na odontologia tem sido impulsionada pela necessidade de otimizar o acompanhamento longitudinal, isto é, a avaliação do mesmo paciente ou grupo de pacientes repetidas vezes ao longo de meses ou anos, e de mitigar a perda do histórico clínico. Este capítulo discute trabalhos acadêmicos e sistemas existentes e os compara à solução proposta.
+
+\section{Trabalhos acadêmicos}
+
+\citeonline{surdu2025} conduziram uma revisão sobre o impacto de ferramentas digitais e plataformas em nuvem na odontologia e concluíram que a telemedicina e a digitalização de registros aumentam a eficiência clínica e melhoram o diagnóstico remoto. O estudo aponta a substituição dos prontuários tradicionais por bases eletrônicas como passo inicial para a modernização do cuidado, o que corrobora a premissa deste trabalho. A revisão, porém, não trata de um instrumento clínico específico nem de análise longitudinal.
+
+No contexto de sistemas inteligentes, \citeonline{alturkestani2021} discutem a aplicação de ciência de dados na construção de sistemas de suporte à decisão clínica em ortodontia, com \textit{pipelines} de coleta, armazenamento, processamento automatizado e análise por aprendizado de máquina. Abordagens desse tipo concentram-se na análise de exames de imagem avançados, como tomografias. O sistema desenvolvido para a LORD-UEPG preenche uma lacuna distinta: a captura e a análise de variáveis categóricas, numéricas e textuais (escalas de dor, mapas de palpação, medidas de abertura bucal e informações sobre próteses) coletadas na rotina ambulatorial.
+
+A extração de conhecimento estatístico a partir de dados desse tipo é ilustrada por \citeonline{sude2021}, que utilizaram dados de prontuários eletrônicos para avaliar características e desfechos de tratamento em pacientes com distonia oromandibular e sinais de DTM. A análise retrospectiva, cruzando variáveis de tratamento, evidencia o potencial de um módulo analítico sobre registros clínicos estruturados. Esse tipo de estudo, contudo, depende da existência prévia de uma base estruturada, justamente o que falta à LORD-UEPG.
+
+\citeonline{singhal2025} apresentam uma plataforma de saúde na pilha MERN com funcionalidades preditivas baseadas em IA, e \citeonline{zalke2026} propõem um \textit{framework} em Python para o exame automatizado de registros de saúde. Ambos confirmam a viabilidade das tecnologias escolhidas, mas são voltados à saúde geral, não contemplam o instrumento RDC/TMD e, no primeiro caso, empregam a IA para predição, finalidade que este trabalho evita.
+
+No campo da IA aplicada à documentação, \citeonline{agrawal2022} demonstraram que LLMs extraem informação de textos clínicos com pouca ou nenhuma anotação, e \citeonline{radford2023} apresentaram o Whisper, que viabiliza a transcrição de fala em português. Nenhum dos dois trabalhos trata de odontologia nem de execução em infraestrutura institucional com revisão humana obrigatória, aspectos centrais da presente proposta.
+
+Por fim, \citeonline{shojaei2024} revisam a segurança e a privacidade em sistemas de informação em saúde e destacam o controle de acesso e o armazenamento seguro como desafios inegociáveis. Essas diretrizes fundamentam as decisões de segurança descritas na \autoref{sec:seguranca}.
+
+\section{Sistemas existentes}
+
+Além da literatura acadêmica, foram considerados sistemas de prontuário disponíveis. O OpenDental é um sistema de gestão odontológica de código aberto, voltado principalmente ao mercado norte-americano. O e-SUS APS (Prontuário Eletrônico do Cidadão), do Ministério da Saúde, é gratuito e possui módulo de atendimento odontológico, mas é orientado à atenção básica. Os sistemas comerciais nacionais de gestão de consultórios são oferecidos por assinatura, em nuvem do fornecedor, com foco em agenda, financeiro e odontograma. Nenhum deles contempla o fluxo pedagógico de supervisão docente nem o instrumento RDC/TMD adotado pela Liga. \todo{confirmar as características de cada sistema (documentação oficial ou teste) antes da versão final.}
+
+\section{Síntese comparativa}
+
+O \autoref{qua:trabalhos-descritivo} resume as tecnologias, as limitações e a diferença de cada trabalho em relação à proposta, e o \autoref{qua:trabalhos-funcionalidades} compara as funcionalidades.
+
+\begin{quadro}[htbp]
+	\caption{Trabalhos relacionados: abordagem, limitações e diferença em relação à proposta}
+	\label{qua:trabalhos-descritivo}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{2.6cm}|Y|Y|Y|}
+		\hline
+		\textbf{Trabalho} & \textbf{Abordagem e tecnologias} & \textbf{Limitações para o contexto da LORD} & \textbf{Diferença da proposta} \\ \hline
+		\citeonline{surdu2025} & Revisão sobre telemedicina e plataformas digitais em odontologia & Visão geral; sem instrumento clínico específico & Sistema implementado para a ficha RDC/TMD da Liga \\ \hline
+		\citeonline{alturkestani2021} & Suporte à decisão em ortodontia; \textit{pipelines} de dados e aprendizado de máquina sobre imagens & Foco em imagem e em decisão clínica & Dados ambulatoriais tabulares e textuais; sem finalidade diagnóstica \\ \hline
+		\citeonline{sude2021} & Análise retrospectiva de dados de PEP em pacientes com DTM & Pressupõe base estruturada preexistente & Cria a base estruturada e o módulo analítico \\ \hline
+		\citeonline{singhal2025} & Plataforma MERN com IA preditiva & Saúde geral; MongoDB sem integridade relacional; IA para predição & Persistência híbrida; IA restrita à documentação \\ \hline
+		\citeonline{zalke2026} & \textit{Framework} Python/Pandas para análise de registros de saúde & Apenas a camada analítica & Sistema completo, da coleta à análise \\ \hline
+		\citeonline{agrawal2022} & LLMs para extração de informação clínica & Não odontológico; modelos em nuvem & Modelos locais, voz e revisão humana obrigatória \\ \hline
+		OpenDental & Gestão odontológica de código aberto & Voltado ao mercado norte-americano; sem RDC/TMD & Instrumento da Liga; fluxo pedagógico \\ \hline
+		e-SUS APS (PEC) & Prontuário público do SUS com módulo odontológico & Atenção básica; sem RDC/TMD e sem análise da Liga & Especializado em DTM e prótese \\ \hline
+		Sistemas comerciais & Gestão de consultório em nuvem, por assinatura & Custo recorrente; dados fora da instituição & Custo zero; dados sob guarda da UEPG \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+
+\begin{quadro}[htbp]
+	\caption{Comparação de funcionalidades entre os trabalhos relacionados e a proposta}
+	\label{qua:trabalhos-funcionalidades}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|Y|c|c|c|c|c|c|c|}
+		\hline
+		\textbf{Trabalho} & \textbf{F1} & \textbf{F2} & \textbf{F3} & \textbf{F4} & \textbf{F5} & \textbf{F6} & \textbf{F7} \\ \hline
+		\citeonline{surdu2025} & S & N & -- & N & N & -- & -- \\ \hline
+		\citeonline{alturkestani2021} & S & N & P & P & N & -- & -- \\ \hline
+		\citeonline{sude2021} & S & S & S & S & N & -- & -- \\ \hline
+		\citeonline{singhal2025} & N & N & S & P & N & N & -- \\ \hline
+		\citeonline{zalke2026} & N & N & P & S & N & -- & -- \\ \hline
+		\citeonline{agrawal2022} & N & N & S & N & S & N & -- \\ \hline
+		OpenDental & S & N & S & P & N & S & S \\ \hline
+		e-SUS APS (PEC) & S & N & S & P & N & S & S \\ \hline
+		Sistemas comerciais & S & N & S & P & ? & N & N \\ \hline
+		\textbf{Este trabalho} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+	\nota{F1: foco odontológico; F2: suporte à ficha RDC/TMD; F3: registro clínico estruturado; F4: análise longitudinal; F5: IA na documentação clínica; F6: execução em infraestrutura própria da instituição; F7: sem custo de licença. S: sim; P: parcial; N: não; --: não se aplica; ?: a confirmar. \todo{validar cada célula na fonte original.}}
+\end{quadro}
+
+Em síntese, nenhum dos trabalhos analisados reúne, em uma mesma solução, o instrumento clínico da Liga, o fluxo de supervisão docente, a análise longitudinal, a IA restrita à documentação e a execução em infraestrutura institucional sem custo de licença. Essa combinação constitui a contribuição deste trabalho.

@@ -1,0 +1,148 @@
+%ljsenger
+\ProvidesPackage{uepg}[2014/09/01 Criacao desta customizacao do abnTeX2]
+
+
+%\newcommand{\quadroname}{Quadro}
+%%\newcommand{\lstcodigo}{Listagem de código}
+
+%\newcommand{\listofquadrosname}{Lista de quadros}
+%%\newcommand{\listofcodigosname}{Lista de códigos}
+
+%\newfloat[chapter]{quadro}{loq}{\quadroname}
+%%\newfloat[chapter]{codigo}{loq}{\lstcodigo}
+
+%\newlistof{listofquadros}{loq}{\listofquadrosname}
+%%\newlistof{listofcodigos}{loq}{\listofcodigosname}
+
+%\newlistentry{quadro}{loq}{0}
+%%\newlistentry{codigo}{loq}{0}
+
+% configurações para atender às regras da ABNT
+%%\setfloatadjustment{codigo}{\centering}
+%%\counterwithout{codigo}{chapter}
+%\renewcommand{\cftquadroname}{\quadroname\space} 
+%%\renewcommand{\cftquadroname}{\lstcodigo\space} 
+%%\renewcommand*{\cftquadroaftersnum}{\hfill--\hfill}
+
+% Configuração de posicionamento padrão:
+%%\setfloatlocations{codigo}{hbtp}
+
+% ljsenger (21/10/2021) start
+
+\setlrmarginsandblock{3cm}{2cm}{*}
+\setulmarginsandblock{3cm}{2cm}{*}
+\checkandfixthelayout
+
+% fonte e tamanho para nomes de capítulo e seção
+\renewcommand{\ABNTEXchapterfont}{\fontseries{b}\selectfont}
+\renewcommand{\ABNTEXchapterfontsize}{\large}
+\renewcommand{\ABNTEXsectionfontsize}{\large\fontseries{n}\selectfont}
+\renewcommand{\ABNTEXsubsectionfontsize}{\large\fontseries{n}\selectfont}
+
+%mudança para lista de figuras
+\renewcommand{\listfigurename}{Lista de figuras}
+
+% espaçamento entre a numeração da seção e o nome da seção
+\makeatletter % access to internal commands
+\renewcommand{\@seccntformat}[1]{\csname the#1\endcsname\ }
+\makeatother
+% sumário...
+\renewcommand{\cftsectionfont}{\normalfont}
+\renewcommand{\cftsectionpagefont}{\cftsectionfont}
+\renewcommand{\cftsubsectionfont}{\normalfont}
+\renewcommand{\cftsubsectionpagefont}{\cftsubsubsectionfont}
+% espaçamento simples entre parágrafos
+\setlength{\parskip}{18pt}
+% ljsenger (21/10/2021) end
+
+% alterando a capa
+\renewcommand{\imprimircapa}{%
+  \begin{capa}%
+    \center
+    \ABNTEXchapterfont\Large 
+    
+    	UNIVERSIDADE ESTADUAL DE PONTA GROSSA\\
+    	SETOR DE ENGENHARIAS, CIÊNCIAS AGRÁRIAS E DE TECNOLOGIA \\
+    	DEPARTAMENTO DE INFORMÁTICA \\
+    
+    \vspace*{4cm}
+    
+    {\ABNTEXchapterfont\large\imprimirautor}
+
+    \vspace*{4cm}
+    \begin{center}
+    \ABNTEXchapterfont\LARGE\imprimirtitulo
+    \end{center}
+    \vfill
+    
+    \large\imprimirlocal\\
+    \large\imprimirdata
+    
+    \vspace*{1cm}
+  \end{capa}
+}
+
+
+% folha de rosto 
+
+\makeatletter
+
+\renewcommand{\folhaderostocontent}{
+\begin{center}
+
+    
+{\ABNTEXchapterfont\large\imprimirautor}
+
+\vspace*{\fill}\vspace*{\fill}
+
+\begin{center}
+\ABNTEXchapterfont\Large\imprimirtitulo
+\end{center}
+
+%\vspace*{\fill}
+
+\abntex@ifnotempty{\imprimirpreambulo}{%
+  \hspace{.45\textwidth}
+  \begin{minipage}{.5\textwidth}
+  \SingleSpacing
+  \imprimirpreambulo\\
+  \\\imprimirorientador\\
+  \abntex@ifnotempty{\imprimircoorientador}{%
+  	{\imprimircoorientadorRotulo~\imprimircoorientador}%
+  }
+  \end{minipage}%
+  \vspace*{\fill}
+}%
+
+
+\vspace*{\fill}
+
+%{\abntex@ifnotempty{\imprimirinstituicao}{\imprimirinstituicao\vspace*{\fill}}}
+
+{\large\imprimirlocal}
+
+\par
+
+{\large\imprimirdata}
+\vspace*{1cm}
+\end{center}
+}
+
+\makeatother
+
+% Entradas no sumário para o nome de seção em caixa alta.
+\makeatletter
+\let\oldcontentsline\contentsline
+\def\contentsline#1#2{%
+  \expandafter\ifx\csname l@#1\endcsname\l@section
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi
+  {%
+    \oldcontentsline{#1}{\MakeTextUppercase{#2}}%
+  }{%
+    \oldcontentsline{#1}{#2}%
+  }%
+}
+\makeatother

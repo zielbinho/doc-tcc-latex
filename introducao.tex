@@ -1,0 +1,34 @@
+\chapter{Introdução}
+\label{cap:introducao}
+
+A adoção de tecnologias da informação na área da saúde transformou a capacidade de armazenamento, recuperação e análise do histórico clínico dos pacientes. No contexto odontológico acadêmico, a estruturação ágil e segura dessas informações é determinante para o sucesso de intervenções prolongadas.
+
+Nesse cenário, evidencia-se um desafio latente na Liga Odontológica de Reabilitação e DTM da Universidade Estadual de Ponta Grossa (LORD-UEPG): a gestão inadequada dos prontuários físicos. Em tratamentos contínuos, com foco principal em disfunção temporomandibular (DTM) e próteses, o formato físico e manual tem ocasionado a perda de informações cruciais, o que compromete o acompanhamento histórico adequado e prejudica a eficácia clínica e acadêmica. Adicionalmente, as soluções de prontuários eletrônicos disponíveis no mercado apresentam-se inviáveis para o contexto da instituição, dada a falta de flexibilidade para adequação pedagógica e o seu custo de implantação e manutenção (Capítulo~\ref{cap:trabalhos}).
+
+Um segundo problema, menos visível, está no próprio ato de coletar a informação. A ficha clínica da LORD-UEPG (Anexo~\ref{anexo:ficha}) é extensa: combina campos fechados, escalas numéricas, medidas em milímetros, mapas de palpação, odontograma e diversos campos narrativos, como a queixa principal e as histórias médica e psicossocial. Durante o atendimento, o acadêmico precisa conduzir a entrevista, examinar o paciente e registrar tudo isso, com frequência usando luvas. A simples transposição do formulário em papel para telas de computador não reduz esse esforço e pode até aumentá-lo.
+
+Diante desse panorama, o presente trabalho justifica-se pela necessidade de desenvolver um sistema digital sob medida. A plataforma tem o potencial de garantir a digitalização, a gestão e a segurança das fichas clínicas, operando em conformidade com a Lei Geral de Proteção de Dados Pessoais \cite{lgpd2018} e com a legislação sobre prontuários \cite{lei13787,cfo91-2009}. Ao exigir a estruturação formal dos dados preenchidos, a ferramenta viabiliza um módulo analítico capaz de identificar tendências na evolução dos pacientes, oferecendo aos alunos e professores um retrato longitudinal baseado em dados.
+
+Para reduzir o esforço de registro, o sistema incorpora um módulo de inteligência artificial (IA) que atua como \emph{escriba}: ele transcreve a fala do acadêmico e organiza as informações narrativas nos campos correspondentes da ficha. Essa escolha respeita um limite ético e regulatório explícito: a IA \emph{não} realiza diagnóstico, não sugere conduta terapêutica e não preenche nenhum campo sem a revisão e a aprovação de um humano. A responsabilidade clínica permanece integralmente com o cirurgião-dentista \cite{cfo118-2012}.
+
+\section{Objetivos}
+
+\subsection{Objetivo geral}
+
+Desenvolver um sistema web de prontuários eletrônicos para a LORD-UEPG, com estruturação da anamnese assistida por inteligência artificial sem finalidade diagnóstica e um módulo de análise de dados voltado às métricas de evolução clínica de pacientes com DTM e usuários de prótese.
+
+\subsection{Objetivos específicos}
+
+\begin{itemize}
+	\item Conduzir o levantamento de requisitos com os alunos e professores da LORD-UEPG, mapeando o fluxo de atendimento e as variáveis da ficha clínica;
+	\item Projetar a arquitetura do sistema, incluindo um modelo de persistência híbrido (relacional e documental) no PostgreSQL que garanta a integridade das variáveis clínicas e acomode estruturas semiestruturadas, como o odontograma e o mapa de palpação;
+	\item Desenvolver as interfaces web de cadastro, anamnese, exame clínico, evolução e busca de pacientes, com fluxo de revisão e aprovação pelo professor supervisor;
+	\item Implementar mecanismos de autenticação, controle de acesso por papéis, auditoria, criptografia e pseudonimização em conformidade com a LGPD;
+	\item Implementar um módulo de IA, executado na infraestrutura da instituição, que transcreva a fala do acadêmico e estruture as informações narrativas da anamnese, mantendo o humano como responsável por aceitar cada sugestão;
+	\item Implementar um módulo de análise estatística em Python e Pandas que calcule indicadores de evolução clínica e os apresente em painéis;
+	\item Avaliar a qualidade da estruturação automática, comparar a captação por áudio e por texto, e validar a usabilidade do sistema com os usuários finais em ambiente simulado.
+\end{itemize}
+
+\section{Organização do trabalho}
+
+O Capítulo~\ref{cap:fundamentacao} apresenta a fundamentação teórica sobre prontuários, DTM, proteção de dados e as tecnologias empregadas. O Capítulo~\ref{cap:trabalhos} discute os trabalhos relacionados e compara-os com a solução proposta. O Capítulo~\ref{cap:metodologia} descreve os requisitos, a arquitetura, a modelagem, os mecanismos de segurança, os módulos de IA e de análise e o protocolo de avaliação. O Capítulo~\ref{cap:resultados} apresenta o sistema desenvolvido e os resultados experimentais, discutidos no Capítulo~\ref{cap:discussao} juntamente com as limitações do trabalho. Por fim, o Capítulo~\ref{cap:conclusao} apresenta as conclusões e os trabalhos futuros.

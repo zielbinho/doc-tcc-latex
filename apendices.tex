@@ -1,0 +1,147 @@
+% ---------------------------------------------------------------------
+\chapter{Trecho do esquema JSON da ficha clínica}
+\label{apendice:schema}
+
+O esquema completo está no repositório do sistema, em \texttt{packages/ficha/schemas}. O \autoref{cod:schema} mostra parte de três seções da ficha inicial. A seção de história médica admite ditado. O questionário de dor admite apenas formulário, de modo que a IA não atribui notas de dor. O diagnóstico do Eixo~I é exclusivamente humano. As definições reutilizáveis, como a escala de 0 a 10, ficam no esquema comum e são referenciadas por \texttt{\$ref}.
+
+\begin{lstlisting}[caption={Trecho do esquema da ficha inicial (versão 1)}, label=cod:schema]
+{
+  "$id": "urn:lord-uepg:ficha-inicial:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "historia_medica": {
+      "x-captacao": ["ditado", "formulario"],
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "q3_alergias": {
+          "title": "Histórico de alergias",
+          "x-questao": "3",
+          "x-obrigatorio": true,
+          "$ref": "urn:lord-uepg:comum:v1#/$defs/texto"
+        },
+        "q4_usa_medicamento": {
+          "title": "Faz uso de algum medicamento?",
+          "x-questao": "4",
+          "$ref": "urn:lord-uepg:comum:v1#/$defs/simNao"
+        }
+      }
+    },
+    "questionario_dtm": {
+      "x-captacao": ["formulario"],
+      "properties": {
+        "q16_dor_atual": {
+          "title": "Nota da dor na face neste momento (0 a 10)",
+          "x-questao": "16",
+          "$ref": "urn:lord-uepg:comum:v1#/$defs/escala0a10"
+        }
+      }
+    },
+    "diagnostico_eixo1": {
+      "x-somente-humano": true,
+      "properties": {
+        "grupo1_muscular": {
+          "enum": ["Ia_dor_miofascial",
+                   "Ib_dor_miofascial_com_limitacao_abertura",
+                   "sem_diagnostico", null]
+        }
+      }
+    }
+  }
+}
+\end{lstlisting}
+
+O \autoref{cod:schema-ia} mostra o esquema derivado automaticamente para um campo da história médica, que é o formato enviado ao modelo de linguagem. A derivação resolve as referências, remove os metadados, mantém as instruções de preenchimento do próprio campo e exige, para cada campo, o valor e o trecho da transcrição que o justifica.
+
+\begin{lstlisting}[caption={Esquema derivado para a IA (campo de alergias)}, label=cod:schema-ia]
+"q3_alergias": {
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Histórico de alergias",
+  "properties": {
+    "valor": {
+      "type": ["string", "null"],
+      "maxLength": 4000,
+      "description": "Registrar \"nega\" quando o paciente negar alergias."
+    },
+    "evidencia": {
+      "type": ["string", "null"],
+      "description": "Trecho literal da transcrição que justifica
+                      o valor; null se não mencionado."
+    }
+  },
+  "required": ["valor", "evidencia"]
+}
+\end{lstlisting}
+
+% ---------------------------------------------------------------------
+\chapter{Roteiro da avaliação de usabilidade}
+\label{apendice:usabilidade}
+
+\section{Tarefas}
+
+\begin{enumerate}
+	\item Acessar o sistema com o usuário de teste;
+	\item Cadastrar o paciente do caso simulado;
+	\item Registrar a anamnese e o exame clínico na condição sorteada (papel, formulário digital ou formulário com ditado e IA);
+	\item Enviar a ficha para revisão;
+	\item (Professores) Revisar, devolver com comentário e aprovar uma ficha.
+\end{enumerate}
+
+\section{Questionário SUS}
+
+Cada item é respondido em escala de 1 (discordo totalmente) a 5 (concordo totalmente). O escore é obtido subtraindo 1 das respostas dos itens ímpares e subtraindo de 5 as respostas dos itens pares; a soma é multiplicada por 2,5, resultando em um valor de 0 a 100 \cite{brooke1996}.
+
+\begin{enumerate}
+	\item Eu acho que gostaria de usar este sistema com frequência.
+	\item Eu achei o sistema desnecessariamente complexo.
+	\item Eu achei o sistema fácil de usar.
+	\item Eu acho que precisaria do apoio de um técnico para conseguir usar este sistema.
+	\item Eu achei que as diversas funções deste sistema estavam bem integradas.
+	\item Eu achei que havia muita inconsistência neste sistema.
+	\item Eu imagino que a maioria das pessoas aprenderia a usar este sistema rapidamente.
+	\item Eu achei o sistema muito complicado de usar.
+	\item Eu me senti muito confiante usando o sistema.
+	\item Eu precisei aprender muitas coisas antes de conseguir usar este sistema.
+\end{enumerate}
+
+\todo{substituir por uma tradução validada do SUS para o português e citar a fonte.}
+
+\section{Entrevista semiestruturada}
+
+\begin{enumerate}
+	\item O que foi mais fácil e o que foi mais difícil em cada forma de registro?
+	\item Você confiou nas sugestões da IA? Em que situações precisou corrigi-las?
+	\item Em que momentos do atendimento você usaria o ditado? Em quais não usaria?
+	\item O que falta no sistema para substituir a ficha em papel na rotina da Liga?
+\end{enumerate}
+
+% ---------------------------------------------------------------------
+\chapter{Matriz de controle de acesso}
+\label{apendice:rbac}
+
+\begin{table}[htbp]
+	\caption{Permissões por papel}
+	\label{tb:rbac}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\textbf{Ação} & \textbf{Aluno} & \textbf{Professor} & \textbf{Pesquisador} & \textbf{Administrador} \\ \hline
+		Cadastrar paciente & Sim & Sim & Não & Não \\ \hline
+		Ver prontuário identificado & Próprios & Sim & Não & Não \\ \hline
+		Preencher ficha (rascunho) & Sim & Sim & Não & Não \\ \hline
+		Usar ditado e IA & Sim & Sim & Não & Não \\ \hline
+		Aprovar ficha & Não & Sim & Não & Não \\ \hline
+		Registrar adendo em ficha aprovada & Sim & Sim & Não & Não \\ \hline
+		Ver painel do paciente & Próprios & Sim & Não & Não \\ \hline
+		Ver painéis de coorte & Não & Sim & Sim & Não \\ \hline
+		Exportar dados pseudonimizados & Não & Não & Sim & Não \\ \hline
+		Gerenciar usuários & Não & Não & Não & Sim \\ \hline
+		Consultar auditoria & Não & Não & Não & Sim \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+\todo{confirmar a matriz com a coordenação da LORD.}

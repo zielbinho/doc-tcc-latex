@@ -1,0 +1,30 @@
+\chapter{Discussão}
+\label{cap:discussao}
+
+\todo{discutir os resultados à luz das três questões que orientaram o projeto, comparando com a literatura do Capítulo~\ref{cap:trabalhos}.}
+
+\section{Onde armazenar os dados}
+
+\todo{discutir a execução integral em infraestrutura institucional: custo, desempenho observado dos modelos locais sem GPU e implicações para a LGPD.}
+
+\section{IA sem finalidade diagnóstica}
+
+\todo{discutir a taxa de alucinação e a de aceitação das sugestões, o papel do trecho de evidência e a eficácia das salvaguardas.}
+
+\section{Áudio ou formulário}
+
+\todo{discutir, com base nos Experimentos B e C, em que partes da ficha o ditado compensa e em quais o formulário é superior.}
+
+\section{Limitações}
+\label{sec:limitacoes}
+
+\begin{itemize}
+	\item \textbf{Dados sintéticos}: os experimentos de IA e de análise utilizam casos e coortes fictícios. Eles demonstram o funcionamento dos módulos, mas não permitem conclusões clínicas sobre a eficácia dos tratamentos da Liga. Narrativas redigidas a partir de gabaritos podem ser mais organizadas que consultas reais.
+	\item \textbf{Amostra da avaliação de usabilidade}: o número reduzido de participantes, todos de uma mesma Liga, limita a generalização dos resultados quantitativos.
+	\item \textbf{Instrumento clínico}: a ficha da Liga baseia-se no RDC/TMD \cite{dworkin1992}, já sucedido pelo DC/TMD \cite{schiffman2014}. O esquema versionado permite a migração, mas ela não foi realizada neste trabalho.
+	\item \textbf{Validade legal}: sem assinatura digital com certificação ICP-Brasil, o sistema não substitui o prontuário em papel \cite{cfo91-2009}.
+	\item \textbf{Interoperabilidade}: o sistema não troca dados com outros sistemas de saúde, como a Rede Nacional de Dados em Saúde, nem adota padrões como o HL7 FHIR.
+	\item \textbf{Escalabilidade}: a implantação prevê um único servidor, adequado ao volume da Liga, mas não a uma clínica-escola inteira sem ajustes de infraestrutura.
+	\item \textbf{Desempenho da IA}: sem GPU, o tempo de resposta dos modelos locais pode ser elevado; modelos menores são mais rápidos, porém menos precisos.
+	\item \textbf{Vieses dos modelos}: modelos de fala e de linguagem podem ter desempenho inferior com sotaques regionais, fala espontânea e vocabulário muito específico.
+\end{itemize}

@@ -1,0 +1,407 @@
+\chapter{Metodologia}
+\label{cap:metodologia}
+
+\section{Caracterização da pesquisa e etapas}
+
+A pesquisa é de natureza aplicada e tecnológica. O escopo central é o desenvolvimento de um software e a avaliação experimental de seus módulos. O percurso metodológico divide-se nas etapas a seguir.
+
+\begin{enumerate}
+	\item \textbf{Levantamento de requisitos}: entrevistas com alunos e professores da LORD-UEPG e análise detalhada da ficha clínica em papel, para compreender o fluxo de atendimento e mapear as variáveis de DTM e prótese (\autoref{sec:requisitos}).
+	\item \textbf{Projeto e desenvolvimento do sistema}: definição da arquitetura, da modelagem de dados híbrida e dos mecanismos de segurança, seguida da implementação iterativa das interfaces e serviços (\autoref{sec:arquitetura} a \autoref{sec:seguranca}).
+	\item \textbf{Módulo de estruturação por IA}: implementação da transcrição de fala e da estruturação da anamnese com modelos executados localmente, sob revisão humana obrigatória (\autoref{sec:metodo-ia}).
+	\item \textbf{Módulo analítico}: cálculo de indicadores de evolução clínica, análises estatísticas e painéis de visualização (\autoref{sec:metodo-analitico}).
+	\item \textbf{Avaliação}: experimentos com casos clínicos sintéticos para medir a qualidade da estruturação automática e o efeito da captação por áudio, teste de usabilidade com os usuários finais em ambiente simulado, validação do pipeline analítico e avaliação técnica de desempenho e segurança (\autoref{sec:protocolo}).
+\end{enumerate}
+
+\section{Levantamento de requisitos}
+\label{sec:requisitos}
+
+Os requisitos foram levantados em reuniões com membros e professores da LORD-UEPG, nas quais foram catalogadas as principais restrições e necessidades do acompanhamento de pacientes com DTM e usuários de prótese. \todo{registrar datas, número de reuniões e participantes; incluir as decisões sobre a ficha de retorno e as categorias de tratamento.}
+
+\subsection{Análise da ficha clínica}
+\label{sec:ficha}
+
+A ficha clínica da Liga (Anexo~\ref{anexo:ficha}) foi decomposta em seções, e cada seção foi classificada quanto à natureza da informação. Essa classificação responde a uma questão central do projeto: qual é a forma mais adequada de captar cada tipo de dado. O resultado está no \autoref{qua:ficha-captacao}.
+
+\begin{quadro}[htbp]
+	\caption{Seções da ficha clínica, natureza da informação e forma de captação adotada}
+	\label{qua:ficha-captacao}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{4.3cm}|L{3cm}|Y|}
+		\hline
+		\textbf{Seção da ficha (questões)} & \textbf{Natureza} & \textbf{Captação no sistema} \\ \hline
+		Identificação, TCLE e número do prontuário & Cadastral & Formulário digital \\ \hline
+		Queixa principal; histórias médica, cirúrgica, de alergias, de medicamentos e psicossocial (1--6); expectativas com a prótese (48--49); observações & Narrativa livre & Ditado pelo acadêmico, com estruturação por IA e revisão humana \\ \hline
+		Hábitos, condições bucais e questionário de DTM (7--36); uso de prótese (46--47) & Autorrelato com respostas fechadas e escalas de 0 a 10 & Formulário digital otimizado para \textit{tablet} \\ \hline
+		Exame de DTM (37--45); exames extraoral e intraoral (50--75); odontograma; condição periodontal & Exame clínico, medidas e mapas & Componentes visuais interativos (odontograma e mapa facial); ditado opcional durante o exame \\ \hline
+		Características relatadas (RDC/TMD); Eixo I -- Diagnóstico; plano de tratamento & Decisão clínica & Exclusivamente humano; bloqueado para a IA \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+
+A captação é, portanto, híbrida. O áudio é empregado onde a informação é naturalmente narrativa ou onde as mãos do acadêmico estão ocupadas e enluvadas durante o exame, situação em que tocar a tela contraria as boas práticas de biossegurança. Formulários são empregados onde as respostas são fechadas e rápidas de marcar. Em todos os casos, o áudio é descartado logo após a transcrição. A comparação objetiva entre as formas de captação é um dos experimentos do trabalho (\autoref{sec:exp-audio}).
+
+\subsection{Requisitos funcionais e não funcionais}
+
+Os principais requisitos estão listados no \autoref{qua:requisitos}.
+
+\begin{quadro}[htbp]
+	\caption{Requisitos funcionais (RF) e não funcionais (RNF)}
+	\label{qua:requisitos}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{1.2cm}|Y|}
+		\hline
+		\textbf{ID} & \textbf{Descrição} \\ \hline
+		RF01 & Autenticar usuários e controlar o acesso por papel (aluno, professor, pesquisador, administrador) \\ \hline
+		RF02 & Cadastrar e buscar pacientes, registrando os consentimentos (TCLE, gravação de áudio, pesquisa) \\ \hline
+		RF03 & Registrar atendimentos de primeira consulta e de retorno, com as seções da ficha clínica \\ \hline
+		RF04 & Registrar o odontograma e o mapa de palpação por meio de componentes gráficos \\ \hline
+		RF05 & Permitir que o professor revise, devolva com comentários ou aprove as fichas preenchidas pelos alunos \\ \hline
+		RF06 & Tornar imutável a ficha aprovada; correções geram nova versão (adendo) \\ \hline
+		RF07 & Transcrever o ditado do acadêmico e sugerir o preenchimento dos campos narrativos, exigindo aceite humano campo a campo \\ \hline
+		RF08 & Exibir a evolução clínica do paciente em painéis (dor, abertura bucal, palpação, tratamentos) \\ \hline
+		RF09 & Exibir painéis de coorte e exportar dados pseudonimizados para pesquisa \\ \hline
+		RF10 & Registrar em trilha de auditoria todas as leituras e alterações de prontuários \\ \hline
+		RNF01 & Conformidade com a LGPD: minimização, pseudonimização, criptografia e controle de acesso \\ \hline
+		RNF02 & Execução integral em infraestrutura da UEPG, sem envio de dados clínicos a serviços externos \\ \hline
+		RNF03 & Uso exclusivo de ferramentas gratuitas e de código aberto \\ \hline
+		RNF04 & Interface utilizável em \textit{tablet} e computador (\textit{web} responsiva) \\ \hline
+		RNF05 & Implantação reprodutível por contêineres \\ \hline
+		RNF06 & Evolução da ficha sem perda ou migração forçada dos registros antigos (esquema versionado) \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+
+\subsection{Perfis de usuário e fluxo de atendimento}
+
+O fluxo reproduz a dinâmica pedagógica da Liga, em que os atendimentos são realizados por acadêmicos sob supervisão direta dos professores, conforme estabelece o TCLE. O aluno preenche a ficha, que permanece como \emph{rascunho}. Ao concluir, envia-a para \emph{revisão}. O professor pode devolvê-la com comentários ou \emph{aprová-la}. A ficha aprovada torna-se imutável, e qualquer correção posterior gera uma nova versão vinculada à original, preservando o histórico exigido de um prontuário. O perfil \emph{pesquisador} acessa apenas dados pseudonimizados, e o \emph{administrador} gerencia usuários sem acesso a dados clínicos. A matriz completa de permissões está no Apêndice~\ref{apendice:rbac}.
+
+\begin{figure}[htbp]
+	\caption{Diagrama de estados da ficha clínica}
+	\label{fig:estados-ficha}
+	\centering
+	\figtodo{diagrama de estados: Rascunho $\rightarrow$ Em revisão $\rightarrow$ Aprovada; Em revisão $\rightarrow$ Rascunho (devolvida); Aprovada $\rightarrow$ nova versão (adendo)}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+\section{Materiais e tecnologias}
+\label{sec:tecnologias}
+
+Todas as ferramentas empregadas são gratuitas e, com exceção dos serviços de hospedagem de código, de código aberto. O \autoref{qua:stack} resume as escolhas e suas justificativas.
+
+\begin{quadro}[htbp]
+	\caption{Tecnologias empregadas}
+	\label{qua:stack}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{2.8cm}|L{4.8cm}|Y|}
+		\hline
+		\textbf{Camada} & \textbf{Tecnologia} & \textbf{Justificativa} \\ \hline
+		Interface & React, TypeScript, Vite, Tailwind CSS, React Hook Form, Recharts & Componentização de formulários extensos \cite{parida2024}; gráficos dos painéis \\ \hline
+		Servidor principal & Node.js, Fastify, Prisma & Entrada e saída não bloqueante para requisições concorrentes \cite{parida2024} \\ \hline
+		Banco de dados & PostgreSQL 16, JSONB, \texttt{pgcrypto} & Integridade relacional com flexibilidade documental \cite{postgres-json}; criptografia de campos \\ \hline
+		Serviço de IA & Python, FastAPI, faster-whisper, Ollama & Transcrição e estruturação executadas localmente \cite{fasterwhisper,ollama} \\ \hline
+		Serviço analítico & Python, Pandas, SciPy & Transformação e análise estatística de dados tabulares \cite{zalke2026} \\ \hline
+		Infraestrutura & Docker Compose, Caddy (HTTPS) & Implantação reprodutível no servidor da instituição \\ \hline
+		Qualidade & Vitest, Playwright, pytest, OWASP ZAP & Testes automatizados e varredura de segurança \cite{zap} \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+
+\section{Arquitetura do sistema}
+\label{sec:arquitetura}
+
+A arquitetura separa a interface, o servidor principal e dois serviços especializados em Python (\autoref{fig:arquitetura}). A interface React comunica-se exclusivamente com a API em Node.js, que concentra a autenticação, o controle de acesso, as regras do prontuário e a auditoria. O serviço de IA recebe da API o áudio ou o texto de uma seção da ficha e devolve uma sugestão estruturada, sem acesso direto ao banco. O serviço analítico conecta-se ao banco com um papel somente de leitura, restrito a um esquema de visões pseudonimizadas.
+
+\begin{figure}[htbp]
+	\caption{Arquitetura do sistema}
+	\label{fig:arquitetura}
+	\centering
+	\figtodo{diagrama de contêineres (C4): Navegador/Tablet $\rightarrow$ Caddy (HTTPS) $\rightarrow$ API Node.js $\rightarrow$ PostgreSQL; API $\rightarrow$ Serviço de IA (faster-whisper + Ollama); Serviço analítico $\rightarrow$ esquema pseudonimizado (somente leitura)}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+\subsection{Infraestrutura e guarda dos dados}
+
+Como o TCLE atribui à UEPG a guarda do prontuário e os dados de saúde são dados sensíveis \cite{lgpd2018}, o sistema foi projetado para ser executado integralmente em infraestrutura institucional. Todos os componentes, inclusive os modelos de IA, são empacotados em contêineres e implantados por um único arquivo Docker Compose em um servidor da universidade. Assim, nenhum dado clínico é enviado a serviços externos. Planos gratuitos de nuvem foram utilizados apenas no desenvolvimento e nos experimentos, e exclusivamente com dados sintéticos. \todo{indicar o servidor efetivamente disponibilizado (DEINFO, LCAD ou NTI) e suas especificações.}
+
+Durante o período deste trabalho, a ficha em papel e o TCLE assinado permanecem como documentos oficiais, e o sistema opera como registro complementar. A eliminação do papel depende de assinatura digital com certificação ICP-Brasil \cite{cfo91-2009}, tratada como trabalho futuro.
+
+\section{Modelagem de dados}
+\label{sec:modelagem}
+
+\subsection{Esquema versionado da ficha}
+
+A decisão central da modelagem é descrever a ficha clínica \emph{uma única vez}, como um documento JSON Schema versionado. O mesmo esquema é usado para (i) gerar os formulários da interface, (ii) validar os dados recebidos pela API, (iii) restringir a saída do modelo de linguagem no módulo de IA e (iv) definir a conversão dos documentos em colunas para o módulo analítico. Cada campo carrega metadados próprios, como a indicação \texttt{x-somente-humano}, que impede o preenchimento pela IA. Quando a Liga alterar a ficha, uma nova versão do esquema é criada, e os registros antigos permanecem válidos segundo a versão com que foram criados. Um trecho do esquema está no Apêndice~\ref{apendice:schema}.
+
+\subsection{Modelo híbrido relacional e documental}
+
+Entidades com estrutura estável e relações que exigem integridade referencial, como usuários, pacientes, atendimentos, consentimentos e tratamentos, são modeladas como tabelas relacionais. O conteúdo das seções da ficha, o odontograma e o mapa de palpação são armazenados em colunas \texttt{JSONB}, conforme a justificativa da \autoref{sec:jsonb}. O \autoref{qua:tabelas} descreve as principais tabelas, e a \autoref{fig:der} apresenta o diagrama entidade-relacionamento.
+
+\begin{quadro}[htbp]
+	\caption{Principais tabelas do banco de dados}
+	\label{qua:tabelas}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{3cm}|Y|}
+		\hline
+		\textbf{Tabela} & \textbf{Conteúdo} \\ \hline
+		\texttt{usuario} & Nome, e-mail, \textit{hash} da senha (Argon2id), papel, segundo fator de autenticação \\ \hline
+		\texttt{paciente} & Número do prontuário, nome, data de nascimento, sexo; CPF, RG, contatos e endereço cifrados \\ \hline
+		\texttt{consentimento} & Tipo (TCLE, gravação, pesquisa), versão do termo, data e documento digitalizado \\ \hline
+		\texttt{atendimento} & Paciente, data, tipo (primeira consulta ou retorno), aluno, professor e situação \\ \hline
+		\texttt{ficha} & Atendimento, seção, versão do esquema, dados (\texttt{JSONB}), situação, autor e aprovador \\ \hline
+		\texttt{odontograma} & Atendimento e estado de cada dente e face (\texttt{JSONB}) \\ \hline
+		\texttt{tratamento} & Paciente, categoria padronizada (placa oclusal, fisioterapia, farmacológico, prótese etc.), início e fim \\ \hline
+		\texttt{sugestao\_ia} & Origem (texto ou áudio), transcrição, modelo, versão do \textit{prompt}, saída (\texttt{JSONB}), latência e decisão humana por campo \\ \hline
+		\texttt{auditoria} & Usuário, ação, entidade, diferenças (\texttt{JSONB}), endereço IP e data; apenas inserção \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+
+\begin{figure}[htbp]
+	\caption{Diagrama entidade-relacionamento}
+	\label{fig:der}
+	\centering
+	\figtodo{DER completo exportado do banco (dbdiagram.io ou DBeaver)}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+Os campos mais consultados pelo módulo analítico são expostos como colunas geradas a partir do documento \texttt{JSONB}, indexáveis como colunas comuns, conforme o \autoref{cod:coluna-gerada}. Essa técnica evita duplicação manual de dados e mantém o documento como fonte única.
+
+\begin{lstlisting}[caption={Coluna gerada a partir do documento JSONB}, language=SQL, label=cod:coluna-gerada]
+ALTER TABLE ficha
+  ADD COLUMN eva_atual smallint
+  GENERATED ALWAYS AS ((dados ->> 'q16_eva_atual')::smallint) STORED;
+
+CREATE INDEX idx_ficha_eva ON ficha (eva_atual);
+CREATE INDEX idx_ficha_dados ON ficha USING gin (dados jsonb_path_ops);
+\end{lstlisting}
+
+A escolha entre o modelo híbrido e a normalização completa é avaliada experimentalmente (\autoref{sec:exp-tecnica}).
+
+\section{Segurança e conformidade com a LGPD}
+\label{sec:seguranca}
+
+As medidas de segurança foram definidas a partir do marco legal (\autoref{sec:marco-legal}), das recomendações da literatura \cite{shojaei2024,tertulino2023} e da lista OWASP Top 10 \cite{owasp-top10}. O \autoref{qua:seguranca} relaciona cada requisito à sua implementação.
+
+\begin{quadro}[htbp]
+	\caption{Requisitos de segurança e implementação correspondente}
+	\label{qua:seguranca}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
+		\hline
+		\textbf{Requisito} & \textbf{Implementação} \\ \hline
+		Autenticação & Senhas com Argon2id; sessão em \textit{cookie} \texttt{HttpOnly}, \texttt{Secure} e \texttt{SameSite}; bloqueio após tentativas sucessivas; segundo fator (TOTP) para professores \\ \hline
+		Controle de acesso & Controle por papéis (RBAC) na API e \textit{Row-Level Security} no PostgreSQL, restringindo cada aluno aos pacientes dos próprios atendimentos \\ \hline
+		Confidencialidade em trânsito & HTTPS em todas as comunicações \\ \hline
+		Confidencialidade em repouso & Campos identificadores cifrados com \texttt{pgcrypto}; disco do servidor cifrado; segredos fora do repositório de código \\ \hline
+		Pseudonimização (LGPD, art.~13) & Esquema analítico com visões que substituem o identificador do paciente por um código HMAC com chave secreta mantida separadamente, faixas etárias em vez de datas e ausência de nome, documentos e contatos \\ \hline
+		Anonimização em exportações & Exportação somente a partir do esquema analítico, com verificação de k-anonimato (k $\geq$ 5) nas combinações de atributos quase identificadores \\ \hline
+		Rastreabilidade & Trilha de auditoria de leituras e alterações, sem permissão de alteração ou exclusão para a aplicação \\ \hline
+		Minimização & Descarte do áudio após a transcrição; coleta restrita aos campos da ficha \\ \hline
+		Disponibilidade & Cópias de segurança diárias cifradas em armazenamento institucional, com teste periódico de restauração \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+
+\section{Módulo de estruturação da anamnese por IA}
+\label{sec:metodo-ia}
+
+O módulo transforma o relato do acadêmico em sugestões de preenchimento da ficha, em quatro passos (\autoref{fig:fluxo-ia}):
+
+\begin{enumerate}
+	\item \textbf{Transcrição}: o áudio é transcrito localmente pelo faster-whisper \cite{fasterwhisper}, com um \textit{prompt} inicial contendo o vocabulário do domínio (ATM, masseter, crepitação, bruxismo, prótese parcial removível etc.); em seguida, o áudio é descartado;
+	\item \textbf{Estruturação}: a transcrição, ou o texto digitado, é enviada a um modelo de linguagem de pesos abertos executado pelo Ollama \cite{ollama}, com temperatura zero e saída restrita ao JSON Schema da seção correspondente, do qual foram removidos os campos marcados como exclusivamente humanos;
+	\item \textbf{Validação}: a saída é validada contra o esquema; valores sem trecho de evidência na transcrição são descartados;
+	\item \textbf{Revisão humana}: a interface exibe cada sugestão destacada, acompanhada do trecho que a justifica, com as opções aceitar, editar e rejeitar. Nenhum valor é gravado sem uma dessas ações.
+\end{enumerate}
+
+\begin{figure}[htbp]
+	\caption{Fluxo do módulo de estruturação da anamnese}
+	\label{fig:fluxo-ia}
+	\centering
+	\figtodo{diagrama de sequência: Aluno $\rightarrow$ Interface $\rightarrow$ API $\rightarrow$ Serviço de IA (Whisper $\rightarrow$ LLM $\rightarrow$ validação) $\rightarrow$ API $\rightarrow$ tela de revisão $\rightarrow$ ficha (rascunho)}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+Para cada campo, o modelo devolve o valor e o trecho de evidência, como no \autoref{cod:saida-ia}. A extração é feita por seção da ficha, e não da ficha inteira de uma vez, o que reduz o volume de texto gerado e, consequentemente, o tempo de resposta em servidores sem GPU. As duas estratégias são comparadas no Experimento~A.
+
+\begin{lstlisting}[caption={Exemplo de sugestão gerada para a seção de história médica}, label=cod:saida-ia]
+{
+  "alergias": {
+    "valor": "dipirona",
+    "evidencia": "tem alergia a dipirona, deu mancha na pele"
+  },
+  "uso_medicamento": {
+    "valor": true,
+    "evidencia": "toma losartana faz uns dois anos"
+  },
+  "historia_cirurgica": { "valor": null, "evidencia": null }
+}
+\end{lstlisting}
+
+As salvaguardas que asseguram a ausência de finalidade diagnóstica são implementadas no código, e não apenas declaradas:
+
+\begin{itemize}
+	\item as seções de diagnóstico (Eixo~I do RDC/TMD), características relatadas e plano de tratamento são marcadas como \texttt{x-somente-humano}, não são enviadas ao modelo e têm escrita rejeitada pela API quando a origem é a IA;
+	\item a instrução ao modelo proíbe inferir, diagnosticar ou completar informações ausentes, exigindo \texttt{null} para o que não foi dito;
+	\item escores derivados, como a GCPS, são calculados por fórmula determinística, sem IA;
+	\item a tabela \texttt{sugestao\_ia} registra o modelo, a versão do \textit{prompt}, a saída bruta e a decisão humana sobre cada campo, permitindo auditoria e medição da taxa de aceitação.
+\end{itemize}
+
+\todo{definir os modelos avaliados (por exemplo, dois modelos de 3 a 8 bilhões de parâmetros das famílias Llama, Qwen ou Gemma) e registrar as versões exatas.}
+
+\section{Módulo analítico}
+\label{sec:metodo-analitico}
+
+O módulo analítico lê exclusivamente o esquema pseudonimizado, converte os documentos das fichas em tabelas com o Pandas e disponibiliza os resultados à interface por meio de uma API. Os indicadores estão organizados em três níveis.
+
+\subsection{Indicadores individuais}
+
+Para cada paciente, ao longo das consultas, são calculados:
+
+\begin{itemize}
+	\item intensidade da dor atual, da pior dor e da dor média (questões 16, 17 e 18);
+	\item abertura bucal sem dor, máxima sem auxílio e máxima com auxílio, em milímetros (questão 39);
+	\item número de sítios dolorosos à palpação e soma das intensidades de 0 a 3 (questões 44 e 45);
+	\item número de atividades limitadas pela dor (questão 36);
+	\item grau da Escala Graduada de Dor Crônica \cite{vonkorff1992}, conforme as Equações~(\ref{eq:cpi}) e~(\ref{eq:incap}).
+\end{itemize}
+
+A intensidade característica da dor (ICD) e o escore de incapacidade (EI) são dados por
+
+\begin{equation}
+	\label{eq:cpi}
+	\mathrm{ICD} = \frac{Q_{16} + Q_{17} + Q_{18}}{3} \times 10
+\end{equation}
+
+\begin{equation}
+	\label{eq:incap}
+	\mathrm{EI} = \frac{Q_{20} + Q_{21} + Q_{22}}{3} \times 10
+\end{equation}
+
+\noindent em que $Q_i$ é a resposta da questão $i$. O EI e o número de dias de afastamento ($Q_{19}$) são convertidos em pontos de incapacidade (0 a 3 cada): de 0 a 6 dias, 0 ponto; de 7 a 14, 1; de 15 a 30, 2; 31 ou mais, 3; EI de 0 a 29, 0 ponto; de 30 a 49, 1; de 50 a 69, 2; 70 ou mais, 3. O grau é 0 na ausência de dor; I se ICD~<~50 e menos de 3 pontos; II se ICD~$\geq$~50 e menos de 3 pontos; III com 3 ou 4 pontos; e IV com 5 ou 6 pontos. \todo{conferir os pontos de corte no manual do RDC/TMD \cite{dworkin1992,pereira2004}.}
+
+\subsection{Indicadores de coorte}
+
+\begin{itemize}
+	\item prevalência das características relatadas (estalido, crepitação, apertamento diurno e noturno, rigidez matinal, zumbido) e de cefaleia;
+	\item distribuição dos diagnósticos do Eixo~I, registrados pelos professores;
+	\item variação da dor entre a consulta inicial e a mais recente, por categoria de tratamento, com teste de Wilcoxon pareado dentro de cada grupo e teste de Kruskal-Wallis entre grupos, acompanhados de tamanho de efeito;
+	\item proporção de pacientes com redução da dor de pelo menos 30\% (melhora moderadamente importante) e de pelo menos 50\% (melhora substancial), conforme o IMMPACT \cite{dworkin2008};
+	\item correlação de Spearman entre variáveis psicossociais (sono, ansiedade) e intensidade da dor;
+	\item taxa de abandono do tratamento, definida como a ausência de retorno por período superior ao combinado.
+\end{itemize}
+
+\subsection{Indicadores de qualidade dos dados}
+
+\begin{itemize}
+	\item \textbf{completude}: proporção de campos obrigatórios preenchidos por ficha;
+	\item \textbf{tempo de preenchimento} por seção;
+	\item \textbf{taxa de aceitação} das sugestões da IA, por campo e por seção.
+\end{itemize}
+
+\subsection{Visualizações}
+
+São disponibilizados três painéis: (i) do paciente, com a evolução da dor, da abertura bucal e dos tratamentos em linha do tempo e um mapa facial de calor da palpação por consulta; (ii) da coorte, com diagramas de caixa da variação da dor por tratamento e gráficos de prevalência; e (iii) de qualidade dos dados.
+
+A análise da eficácia dos tratamentos exige que as mesmas medidas sejam repetidas nos retornos. Como a ficha atual é de primeira consulta, foi definida com a Liga uma \emph{ficha de retorno} reduzida, com as questões 16 a 22, 39, 44 e 45, a adesão ao tratamento e as intercorrências, além de uma lista fechada de categorias de tratamento. \todo{confirmar com a LORD o conteúdo da ficha de retorno e a lista de tratamentos.}
+
+\section{Protocolo de avaliação}
+\label{sec:protocolo}
+
+Para não depender de dados reais de pacientes durante o desenvolvimento, todos os experimentos com IA e com o módulo analítico utilizam dados sintéticos. Dados reais só serão tratados no servidor institucional e mediante as autorizações descritas na \autoref{sec:etica}.
+
+\subsection{Base de casos clínicos sintéticos}
+\label{sec:casos}
+
+Foram elaborados 40 casos clínicos fictícios. Cada caso é composto por um \emph{gabarito}, isto é, a ficha inicial completa em formato JSON, e por uma \emph{narrativa} de consulta que contém as informações do gabarito.
+
+Os gabaritos são produzidos por um gerador em Python, com semente aleatória fixa (2026) para garantir a reprodutibilidade. Os casos são distribuídos igualmente entre cinco perfis clínicos: DTM predominantemente muscular, DTM articular, usuário de prótese, DTM associada ao uso de prótese e paciente sem DTM. As respostas são sorteadas sob regras de coerência clínica. Por exemplo, a pior dor nunca é menor que a dor atual, a abertura com auxílio supera a abertura sem auxílio, e o diagnóstico registrado é compatível com os achados de palpação. Todo gabarito é validado contra o esquema da ficha, e as regras de coerência são verificadas por testes automatizados.
+
+Para cada caso, o gerador produz também um roteiro destinado ao membro da Liga que redigirá a narrativa. O roteiro lista os fatos que devem aparecer, os campos que \emph{não} podem ser mencionados, por estarem vazios no gabarito, e de um a três desafios de linguagem sorteados. Os desafios são negações (``nega alergias''), expressões temporais imprecisas (``faz uns dois anos''), autocorreções (``não, é do lado esquerdo''), termos coloquiais (``trava'', ``dentadura''), informações irrelevantes e ordem diferente da ficha. A lista de campos a omitir torna mensurável a taxa de alucinação: qualquer valor extraído para esses campos é, por construção, indevido.
+
+Os casos foram divididos, por sorteio, em um conjunto de ajuste (10 casos), usado para refinar os \textit{prompts}, e um conjunto de teste (30 casos), usado apenas na medição final.
+
+\subsection{Experimento A: qualidade da estruturação automática}
+\label{sec:exp-ia}
+
+Os casos de teste são processados por \todo{dois ou três} modelos de linguagem, cada um em duas estratégias (ficha inteira e extração por seção). Cada campo extraído é comparado ao gabarito. Para campos categóricos e booleanos, contam-se os verdadeiros positivos ($VP$), os falsos positivos ($FP$) e os falsos negativos ($FN$), e calculam-se
+
+\begin{equation}
+	P = \frac{VP}{VP+FP}, \qquad R = \frac{VP}{VP+FN}, \qquad F_1 = \frac{2PR}{P+R}.
+\end{equation}
+
+Para campos numéricos, calculam-se a taxa de acerto exato e o erro absoluto médio. Campos de texto livre são avaliados por dois avaliadores em escala de 0 (inadequado) a 2 (adequado). Além disso, medem-se:
+
+\begin{itemize}
+	\item \textbf{taxa de alucinação}: proporção de campos preenchidos pelo modelo cujo valor no gabarito é nulo;
+	\item \textbf{taxa de omissão}: proporção de campos com valor no gabarito deixados nulos pelo modelo;
+	\item \textbf{validade estrutural}: proporção de respostas que respeitam o esquema;
+	\item \textbf{latência} por caso, em CPU e em GPU;
+	\item \textbf{reprodutibilidade}: concordância entre três execuções do mesmo caso.
+\end{itemize}
+
+\subsection{Experimento B: captação por áudio versus texto}
+\label{sec:exp-audio}
+
+\todo{15 a 20} narrativas do conjunto de teste são lidas e gravadas por voluntários em duas condições acústicas: ambiente silencioso e ambiente com ruído de clínica (ruído gravado na própria clínica e sobreposto ao áudio). As gravações são transcritas por modelos Whisper de diferentes tamanhos. A qualidade da transcrição é medida pela taxa de erro de palavras
+
+\begin{equation}
+	\mathrm{WER} = \frac{S + D + I}{N},
+\end{equation}
+
+\noindent em que $S$, $D$ e $I$ são, respectivamente, as substituições, remoções e inserções necessárias para transformar a transcrição no texto de referência e $N$ é o número de palavras da referência. A WER é calculada também apenas sobre os termos clínicos. Em seguida, as transcrições passam pelo Experimento~A, e a diferença de $F_1$ entre a extração a partir da transcrição e a partir do texto original quantifica a perda introduzida pelo áudio. Registra-se ainda o tempo de fala em comparação com o tempo de digitação do mesmo conteúdo.
+
+\subsection{Experimento C: usabilidade e eficiência}
+\label{sec:exp-usabilidade}
+
+\begin{itemize}
+	\item \textbf{Participantes}: \todo{8 a 12} acadêmicos da LORD-UEPG e \todo{2 ou 3} professores, estes para o fluxo de revisão. Critério de inclusão: ser membro ativo e já ter preenchido a ficha em papel. Critério de exclusão: ter participado do desenvolvimento do sistema. O tamanho da amostra baseia-se na evidência de que poucos usuários revelam a maior parte dos problemas de usabilidade \cite{nielsen1993}.
+	\item \textbf{Desenho}: intrassujeitos. Cada participante registra três casos simulados, apresentados por roteiro gravado ou por um colega no papel de paciente, em três condições: ficha em papel, formulário digital e formulário digital com ditado e IA. A ordem das condições é contrabalanceada por quadrado latino, e os casos têm complexidade equivalente.
+	\item \textbf{Instrumentos}: cronometragem por ficha; comparação com o gabarito para medir completude e erros; questionário SUS \cite{brooke1996}; NASA-TLX \cite{hart1988}; entrevista semiestruturada curta (Apêndice~\ref{apendice:usabilidade}).
+	\item \textbf{Indicadores}: tempo de preenchimento, completude, número de erros, escore SUS, carga de trabalho, taxa de aceitação das sugestões da IA e problemas de usabilidade classificados por severidade.
+	\item \textbf{Análise}: teste de Friedman com comparações de Wilcoxon a posteriori, adequados a amostras pequenas; escore SUS médio com intervalo de confiança, interpretado segundo \citeonline{bangor2008}; categorização das respostas abertas.
+\end{itemize}
+
+\subsection{Experimento D: validação do pipeline analítico}
+\label{sec:exp-analitico}
+
+Foi gerada uma coorte sintética de \todo{150} pacientes com \todo{4 a 6} consultas cada, com trajetórias de dor \emph{programadas}: por exemplo, redução média de 40\% no grupo com placa oclusal e de 10\% no grupo apenas com orientações, acrescidas de ruído aleatório e de abandono. O módulo analítico é aplicado a essa coorte e deve recuperar os efeitos programados. Por ter efeito conhecido, a coorte valida objetivamente o cálculo dos indicadores e dos testes estatísticos, sem pretender produzir conclusões clínicas.
+
+\subsection{Avaliação técnica}
+\label{sec:exp-tecnica}
+
+\begin{itemize}
+	\item \textbf{Desempenho da persistência}: o odontograma e o mapa de palpação de \todo{1.000 e 10.000} pacientes sintéticos são armazenados no modelo híbrido (\texttt{JSONB}) e em um modelo totalmente normalizado; comparam-se o tempo de leitura do prontuário completo (\texttt{EXPLAIN ANALYZE}), o tempo de escrita e o espaço em disco;
+	\item \textbf{Segurança}: varredura com o OWASP ZAP \cite{zap} antes e depois das correções e testes automatizados que verificam que cada papel não acessa recursos não autorizados;
+	\item \textbf{Qualidade do código}: cobertura dos testes unitários e de ponta a ponta executados em integração contínua.
+\end{itemize}
+
+\section{Aspectos éticos}
+\label{sec:etica}
+
+O Experimento~C envolve participantes humanos (acadêmicos e professores) e, por isso, \todo{foi submetido ao Comitê de Ética em Pesquisa da UEPG por meio da Plataforma Brasil, CAAE n.º ...}, observadas as Resoluções CNS n.º 466/2012 e 510/2016 \cite{cns466-2012,cns510-2016}. Os participantes assinam termo de consentimento próprio e suas respostas são analisadas de forma anônima. Nenhum dado real de paciente é utilizado nos experimentos A, B e D. O uso futuro do ditado em atendimentos reais exige termo de consentimento adicional para gravação de áudio, uma vez que o TCLE vigente não contempla essa finalidade.
+
+\section{Cronograma}
+
+As atividades previstas estão na \autoref{tb:cronograma}.
+
+\begin{table}[htbp]
+	\caption{Cronograma de atividades (2026)}
+	\label{tb:cronograma}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
+		\hline
+		\textbf{Período} & \textbf{Atividades} \\ \hline
+		28/09 a 04/10 & Reunião com a LORD; submissão ao CEP; ambiente de desenvolvimento; esquema JSON da ficha (versão 1) \\ \hline
+		05/10 a 18/10 & API (autenticação, papéis, pacientes, atendimentos, fichas, auditoria); formulários gerados pelo esquema; odontograma e mapa de palpação; fluxo de revisão \\ \hline
+		19/10 a 01/11 & Serviço de IA e tela de revisão das sugestões; base de casos sintéticos; Experimento A \\ \hline
+		02/11 a 08/11 & Gravações e Experimento B; serviço analítico, coorte sintética e painéis (Experimento D) \\ \hline
+		09/11 a 15/11 & Experimento C; avaliação técnica; implantação no servidor da UEPG \\ \hline
+		16/11 a 29/11 & Redação dos resultados e da discussão; revisão geral e normalização \\ \hline
+		30/11 a 06/12 & Correções finais e preparação da defesa \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{table}
+
+\todo{ajustar o cronograma à data da defesa.}

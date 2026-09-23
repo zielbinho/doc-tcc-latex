@@ -1,0 +1,167 @@
+\chapter{Resultados}
+\label{cap:resultados}
+
+Este capítulo apresenta o sistema desenvolvido e os resultados dos experimentos descritos na \autoref{sec:protocolo}.
+
+\section{Levantamento de requisitos e modelagem}
+
+Por meio de reuniões com os membros e professores da LORD-UEPG, foram catalogadas as principais restrições e necessidades do acompanhamento de DTM e próteses e mapeado o fluxo de atendimento. A análise da ficha resultou na classificação apresentada no \autoref{qua:ficha-captacao} e no esquema JSON da ficha inicial, com 144 campos distribuídos em 15 seções. Todas as questões numeradas da ficha em papel (1 a 75, exceto a 43, que é a legenda da escala de palpação) e os blocos não numerados (queixa principal, condição DTM, características relatadas, Eixo~I, tecidos moles, condição periodontal, observações e plano de tratamento) estão representados, o que é verificado por um teste automatizado de cobertura.
+
+A \autoref{tb:campos-captacao} resume os campos por forma de captação. Os 15 campos de decisão clínica são exclusivamente humanos. Os 26 campos do questionário de dor, que incluem as escalas da GCPS, admitem apenas o formulário, de modo que a IA não pode atribuir notas de dor. Os demais 103 campos admitem ditado e podem receber sugestões, sempre sujeitas à revisão humana. Além da ficha inicial, foram definidos os esquemas da ficha de retorno (proposta a validar com a Liga), do odontograma, na notação FDI, e dos dados cadastrais do paciente. Estes últimos ficam separados dos dados clínicos, e os campos identificadores são marcados para armazenamento cifrado.
+
+\begin{table}[htbp]
+	\caption{Campos da ficha inicial por forma de captação}
+	\label{tb:campos-captacao}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|}
+		\hline
+		\textbf{Forma de captação} & \textbf{Seções} & \textbf{Campos} \\ \hline
+		Exclusivamente humana & 4 & 15 \\ \hline
+		Somente formulário & 1 & 26 \\ \hline
+		Formulário, componentes visuais ou ditado com IA & 10 & 103 \\ \hline
+		\textbf{Total} & \textbf{15} & \textbf{144} \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+A partir desse esquema, foi construído o modelo de dados híbrido da \autoref{fig:der}, que prioriza campos numéricos e categóricos estruturados para viabilizar o acoplamento das ferramentas de análise em Python e Pandas.
+
+\section{Sistema desenvolvido}
+
+\todo{descrever cada tela, relacionando-a aos requisitos do \autoref{qua:requisitos}.}
+
+\begin{figure}[htbp]
+	\caption{Tela de preenchimento da anamnese}
+	\label{fig:tela-anamnese}
+	\centering
+	\figtodo{captura da tela da ficha gerada a partir do esquema}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+\begin{figure}[htbp]
+	\caption{Odontograma e mapa de palpação interativos}
+	\label{fig:tela-odontograma}
+	\centering
+	\figtodo{capturas do odontograma e do mapa facial de palpação}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+\begin{figure}[htbp]
+	\caption{Revisão das sugestões da IA com o trecho de evidência}
+	\label{fig:tela-revisao-ia}
+	\centering
+	\figtodo{captura da tela de revisão (aceitar, editar, rejeitar)}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+\begin{figure}[htbp]
+	\caption{Painel de evolução clínica do paciente}
+	\label{fig:tela-painel}
+	\centering
+	\figtodo{captura do painel do paciente: dor, abertura bucal, mapa de calor e linha do tempo de tratamentos}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+\section{Avaliação técnica}
+
+\begin{table}[htbp]
+	\caption{Desempenho da persistência híbrida em comparação com o modelo normalizado}
+	\label{tb:benchmark}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\multirow{2}{*}{\textbf{Métrica}} & \multicolumn{2}{c|}{\textbf{1.000 pacientes}} & \multicolumn{2}{c|}{\textbf{10.000 pacientes}} \\ \cline{2-5}
+		& \textbf{JSONB} & \textbf{Normalizado} & \textbf{JSONB} & \textbf{Normalizado} \\ \hline
+		Leitura do prontuário (ms) & -- & -- & -- & -- \\ \hline
+		Escrita de um atendimento (ms) & -- & -- & -- & -- \\ \hline
+		Espaço em disco (MB) & -- & -- & -- & -- \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+\todo{resultado da varredura OWASP ZAP (alertas por severidade, antes e depois), resultados dos testes de controle de acesso e cobertura de testes.}
+
+\section{Experimento A: qualidade da estruturação automática}
+
+\begin{table}[htbp]
+	\caption{Desempenho da estruturação automática no conjunto de teste}
+	\label{tb:exp-a}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|l|c|c|c|c|c|c|}
+		\hline
+		\textbf{Modelo} & \textbf{Estratégia} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{Alucinação} & \textbf{Omissão} & \textbf{Latência (s)} \\ \hline
+		Modelo 1 & Ficha inteira & -- & -- & -- & -- & -- & -- \\ \hline
+		Modelo 1 & Por seção & -- & -- & -- & -- & -- & -- \\ \hline
+		Modelo 2 & Ficha inteira & -- & -- & -- & -- & -- & -- \\ \hline
+		Modelo 2 & Por seção & -- & -- & -- & -- & -- & -- \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+\todo{F1 por seção da ficha (gráfico), validade estrutural, reprodutibilidade e análise qualitativa dos erros por categoria: negação, tempo, autocorreção, termos coloquiais.}
+
+\section{Experimento B: captação por áudio versus texto}
+
+\begin{table}[htbp]
+	\caption{Taxa de erro de palavras e impacto na estruturação}
+	\label{tb:exp-b}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|l|c|c|c|}
+		\hline
+		\textbf{Modelo Whisper} & \textbf{Condição} & \textbf{WER geral} & \textbf{WER termos clínicos} & \textbf{$\Delta F_1$ vs. texto} \\ \hline
+		\textit{small} & Silêncio & -- & -- & -- \\ \hline
+		\textit{small} & Ruído & -- & -- & -- \\ \hline
+		\textit{medium} & Silêncio & -- & -- & -- \\ \hline
+		\textit{medium} & Ruído & -- & -- & -- \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+\section{Experimento C: usabilidade e eficiência}
+
+\todo{caracterização dos participantes (número, período do curso, experiência com a ficha).}
+
+\begin{table}[htbp]
+	\caption{Resultados por condição de registro}
+	\label{tb:exp-c}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\textbf{Condição} & \textbf{Tempo (min)} & \textbf{Completude (\%)} & \textbf{Erros} & \textbf{NASA-TLX} \\ \hline
+		Papel & -- & -- & -- & -- \\ \hline
+		Formulário digital & -- & -- & -- & -- \\ \hline
+		Formulário com ditado e IA & -- & -- & -- & -- \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+\todo{escore SUS médio e intervalo de confiança; resultado do teste de Friedman; taxa de aceitação das sugestões; problemas de usabilidade por severidade; síntese das entrevistas.}
+
+\section{Experimento D: validação do pipeline analítico}
+
+\begin{table}[htbp]
+	\caption{Efeitos programados e efeitos recuperados na coorte sintética}
+	\label{tb:exp-d}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\textbf{Tratamento} & \textbf{Redução programada} & \textbf{Redução estimada} & \textbf{$p$ (Wilcoxon)} & \textbf{Redução $\geq$ 30\%} \\ \hline
+		Placa oclusal & 40\% & -- & -- & -- \\ \hline
+		Orientações & 10\% & -- & -- & -- \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+\begin{figure}[htbp]
+	\caption{Painel de coorte gerado a partir da coorte sintética}
+	\label{fig:painel-coorte}
+	\centering
+	\figtodo{diagramas de caixa da variação da dor por tratamento e prevalência das características relatadas}
+	\fonte{Os autores (2026).}
+\end{figure}

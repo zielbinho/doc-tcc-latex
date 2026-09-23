@@ -1,0 +1,98 @@
+\chapter{Fundamentação teórica}
+\label{cap:fundamentacao}
+
+Para fundamentar o desenvolvimento do sistema web de prontuários e de seus módulos de IA e de análise, faz-se necessário compreender o cenário atual do registro de dados em saúde, os desafios do modelo físico, os instrumentos clínicos que a ficha da LORD-UEPG operacionaliza, o marco legal aplicável e as tecnologias que viabilizam a solução.
+
+\section{Os desafios do prontuário físico em clínicas odontológicas}
+\label{sec:prontuario-fisico}
+
+O registro clínico em papel, tradicionalmente adotado por clínicas, escolas e ligas acadêmicas, apresenta limitações severas quando o tratamento exige acompanhamento longitudinal prolongado. No contexto da LORD-UEPG, o instrumento atual de coleta de dados é um formulário físico extenso e complexo (Anexo~\ref{anexo:ficha}). A ficha engloba o termo de consentimento, histórico médico detalhado, escalas de avaliação de dor, mapas de palpação muscular (exames de toque padronizado para registrar a resposta dolorosa do paciente em músculos específicos da cabeça, como masseter e temporal), a avaliação de ruídos da articulação temporomandibular (ATM) durante o movimento da mandíbula, a condição periodontal e o odontograma (representação gráfica dos dentes da arcada).
+
+Embora a riqueza desses dados seja essencial para o diagnóstico de disfunções temporomandibulares e para o planejamento de próteses, o suporte em papel torna a informação estática. A gestão manual de grandes volumes de dados clínicos dificulta o cruzamento de variáveis ao longo do tempo \cite{li2022}. Quando um paciente retorna para múltiplas sessões, a identificação visual de padrões de melhora ou piora (por exemplo, a redução gradual da dor em um músculo específico) exige um esforço cognitivo e temporal elevado, além de estar sujeita à perda física de documentos e à ilegibilidade de registros manuais. \todo{acrescentar uma referência que sustente a afirmação sobre perda e ilegibilidade de prontuários em papel, como pediu o parecer técnico.}
+
+\subsection{O manejo clínico e longitudinal de DTM e próteses}
+
+A disfunção temporomandibular compreende um conjunto de condições musculoesqueléticas e neuromusculares que afetam as ATMs, os músculos mastigatórios e os tecidos associados \cite{pbh2016}. Devido à sua natureza complexa e multifatorial, o tratamento exige uma abordagem cuidadosa, priorizando métodos conservadores, reversíveis e não invasivos em sua fase inicial \cite{pbh2016}.
+
+A literatura e os protocolos clínicos oficiais recomendam uma combinação de terapias para o manejo da dor e a restauração da função mandibular \cite{sassi2018}. Entre as principais abordagens de primeira linha destacam-se as placas oclusais, a termoterapia, a farmacoterapia (analgésicos e anti-inflamatórios) e as orientações de autocuidado, reeducação de hábitos nocivos e aconselhamento \cite{batista2024,sms-sp2023}.
+
+Além do tratamento de suporte básico, a fisioterapia e as terapias manuais orofaciais desempenham papel fundamental na reabilitação. Recursos como o laser de baixa intensidade, o ultrassom, os exercícios de alongamento muscular e a mobilização articular apresentam benefícios na redução da dor e no aumento da amplitude de movimento mandibular \cite{pelicioli2017}. Estudos bibliométricos confirmam que a placa oclusal e o laser estão entre os tratamentos mais reportados para a DTM de origem miofascial \cite{batista2024}. As placas acrílicas interoclusais, como a placa de Michigan, são amplamente indicadas para a remissão de dores musculares e articulares crônicas e exigem uso prolongado e ajustes periódicos \cite{sms-sp2023}.
+
+É justamente essa multiplicidade de condutas e a necessidade de reavaliações contínuas que tornam o acompanhamento do paciente um desafio informacional. A resposta às intervenções, seja pela redução da dor medida em escalas numéricas, pela melhora da função mastigatória ou pelo aumento da abertura bucal, precisa ser monitorada ao longo de meses ou anos \cite{sassi2018,pbh2016}. Nesse contexto, a transição do papel para um prontuário eletrônico estruturado deixa de ser apenas uma modernização administrativa e passa a ser condição para correlacionar cada terapia ou prótese com a evolução real do quadro clínico.
+
+\section{Instrumentos padronizados de avaliação da DTM}
+\label{sec:rdc}
+
+Grande parte da ficha da LORD-UEPG segue os \textit{Research Diagnostic Criteria for Temporomandibular Disorders} (RDC/TMD) \cite{dworkin1992}, cuja tradução oficial para o português foi publicada por \citeonline{pereira2004}. O RDC/TMD organiza a avaliação em dois eixos. O Eixo~I reúne os critérios físicos que classificam as desordens em três grupos: desordens musculares (Grupo~I), deslocamentos do disco articular (Grupo~II) e outras condições articulares, como artralgia, osteoartrite e osteoartrose (Grupo~III). O Eixo~II avalia o impacto psicossocial e a incapacidade associada à dor.
+
+Um instrumento central do Eixo~II é a \textit{Graded Chronic Pain Scale} (GCPS), proposta por \citeonline{vonkorff1992}. As questões~16 a 22 da ficha da LORD-UEPG correspondem exatamente aos itens dessa escala: a intensidade da dor atual, da pior dor e da dor média nos últimos seis meses (escala de 0 a 10), o número de dias de afastamento das atividades e três itens de interferência nas atividades diárias, sociais e laborais. A partir deles calcula-se a \emph{intensidade característica da dor} e um \emph{escore de incapacidade}, que classificam o paciente em graus de 0 a IV. Por ser um cálculo determinístico sobre respostas do próprio paciente, a GCPS pode ser computada automaticamente pelo sistema sem configurar diagnóstico (\autoref{sec:metodo-analitico}).
+
+Em 2014, o RDC/TMD foi revisado e deu origem aos \textit{Diagnostic Criteria for Temporomandibular Disorders} (DC/TMD) \cite{schiffman2014}, hoje o padrão internacional. Como a LORD-UEPG utiliza a ficha baseada no RDC/TMD, o sistema a reproduz fielmente, mas foi projetado para admitir novas versões da ficha sem perda dos registros antigos (\autoref{sec:modelagem}).
+
+\section{Prontuário eletrônico do paciente e segurança da informação}
+\label{sec:pep}
+
+A transição de registros de saúde em papel para modelos digitais tem sido amplamente discutida e incentivada na literatura. Estudos demonstram que a interoperabilidade e a adoção de prontuários eletrônicos impactam não apenas o tempo de atendimento, mas principalmente a segurança e a qualidade do cuidado \cite{li2022}.
+
+Ao estruturar em um banco de dados informações antes isoladas em páginas de papel, o prontuário eletrônico viabiliza buscas instantâneas e a padronização de terminologias. Contudo, a digitalização levanta preocupações pertinentes acerca da privacidade de informações sensíveis. Estudos de mapeamento sistemático identificam as vulnerabilidades desses sistemas e os métodos de anonimização aplicáveis a grandes volumes de dados de saúde \cite{tertulino2023,zuo2021}, e revisões sobre segurança em sistemas de informação em saúde apontam o controle rigoroso de acesso e o armazenamento seguro como requisitos inegociáveis \cite{shojaei2024}. A plataforma deve, portanto, ser pautada desde o início pelo princípio de privacidade desde a concepção (\textit{privacy by design}).
+
+\subsection{Marco legal}
+\label{sec:marco-legal}
+
+Três conjuntos de normas orientam o projeto:
+
+\begin{itemize}
+	\item \textbf{Lei Geral de Proteção de Dados Pessoais} \cite{lgpd2018}. Dados referentes à saúde são \emph{dados pessoais sensíveis} (art.~5.º, II) e seu tratamento é admitido, entre outras hipóteses, para a tutela da saúde por profissionais de saúde e para a realização de estudos por órgão de pesquisa, garantida, sempre que possível, a anonimização (art.~11). O art.~13 trata dos estudos em saúde pública e define \emph{pseudonimização} como o tratamento pelo qual um dado perde a possibilidade de associação a um indivíduo, senão pelo uso de informação adicional mantida separadamente pelo controlador em ambiente controlado e seguro. O art.~46 exige medidas de segurança técnicas e administrativas aptas a proteger os dados.
+	\item \textbf{Lei n.º 13.787/2018} \cite{lei13787}, que disciplina a digitalização e a guarda de prontuários em meio eletrônico e estabelece prazo mínimo de guarda.
+	\item \textbf{Resolução CFO-91/2009} \cite{cfo91-2009}, que estabelece normas técnicas para o uso de sistemas informatizados na guarda de prontuários odontológicos, incluindo requisitos de certificação digital para a eliminação do papel.
+\end{itemize}
+
+\todo{conferir o texto vigente dos artigos citados e o prazo de guarda previsto na Lei 13.787/2018.}
+
+O TCLE assinado pelos pacientes da LORD-UEPG estabelece que o prontuário fica sob a guarda da UEPG e autoriza o uso dos dados para ensino e pesquisa (Anexo~\ref{anexo:ficha}). Isso implica duas decisões de projeto discutidas no Capítulo~\ref{cap:metodologia}: os dados reais devem permanecer em infraestrutura institucional, e o uso para pesquisa deve ocorrer sobre dados pseudonimizados.
+
+\section{Análise de trajetórias e inteligência analítica no manejo de DTM}
+
+A computação aplicada à odontologia tem ido além do armazenamento. Revisões recentes sobre IA e aprendizado de máquina em desordens temporomandibulares mostram a capacidade de modelos algorítmicos de identificar correlações complexas, sobretudo em exames de imagem voltados ao diagnóstico \cite{mehta2025,wu2025}. Este trabalho, contudo, adota deliberadamente outro recorte: a IA \emph{não} é empregada para diagnosticar. O diagnóstico, o plano de tratamento e a decisão clínica permanecem sob responsabilidade do cirurgião-dentista \cite{cfo118-2012}, e a IA atua apenas na organização da informação coletada (\autoref{sec:ia-estruturacao}).
+
+A proposta embasa-se no conceito de modelagem de trajetórias de pacientes \cite{silva2022}. Informações estruturadas, como as marcações musculares e articulares da ficha, as escalas de dor e as medidas de abertura bucal, permitem revelar tendências longitudinais. Quando analisados isoladamente e de forma manual, pequenos sinais de alteração no tratamento podem passar despercebidos. Ferramentas analíticas aplicadas à linha do tempo do tratamento permitem visualizar a evolução de forma gráfica e oferecer a alunos e professores indicadores que apoiam o acompanhamento \cite{allam2021}.
+
+\section{Inteligência artificial para estruturação de informação clínica}
+\label{sec:ia-estruturacao}
+
+Uma parcela relevante da informação clínica é registrada como texto livre: queixa principal, histórico médico, uso de medicamentos, história psicossocial e expectativas do paciente. Converter esse conteúdo em campos estruturados é uma tarefa clássica de extração de informação. \citeonline{agrawal2022} mostraram que grandes modelos de linguagem (\textit{Large Language Models}, LLMs) conseguem extrair informações de textos clínicos com poucos ou nenhum exemplo de treinamento, sem a necessidade de grandes bases anotadas.
+
+Dois avanços tornam essa abordagem viável no contexto deste trabalho. O primeiro é a disponibilidade de modelos de pesos abertos que podem ser executados localmente, por meio de ferramentas como o Ollama \cite{ollama}, sem enviar dados a serviços externos. O segundo é a geração com \emph{saída estruturada}, na qual a resposta do modelo é restringida a um esquema JSON predefinido. Isso garante que a saída seja sintaticamente válida e contenha apenas os campos permitidos.
+
+Para a captação por voz, o modelo Whisper \cite{radford2023} realiza reconhecimento automático de fala multilíngue, incluindo o português, e foi treinado com grande volume de áudio. Sua implementação otimizada \textit{faster-whisper} \cite{fasterwhisper} permite a execução em CPU. O desempenho de sistemas de transcrição é usualmente medido pela taxa de erro de palavras (\textit{Word Error Rate}, WER), definida na \autoref{sec:protocolo}.
+
+O principal risco desses modelos é a \emph{alucinação}: a geração de conteúdo plausível que não consta da entrada. Em um prontuário, um campo preenchido indevidamente é mais grave que um campo omitido. Por isso, a literatura e a prática recomendam manter um humano como revisor obrigatório (\textit{human-in-the-loop}), exigir que o modelo aponte a evidência textual de cada valor extraído e medir explicitamente a taxa de alucinação. Esses princípios orientam o projeto do módulo descrito na \autoref{sec:metodo-ia}.
+
+\section{Arquitetura de sistemas web em saúde e tecnologias aplicadas}
+\label{sec:arquitetura-web}
+
+A escolha da arquitetura de software é um fator crítico para a sustentabilidade, a escalabilidade e a manutenibilidade de sistemas de informação em saúde. Diferentemente de aplicações locais (\textit{desktop}), sistemas web permitem que os prontuários sejam acessados de forma distribuída por alunos e professores na clínica, exigindo apenas um navegador e acesso à rede, com atualizações centralizadas no servidor.
+
+Para lidar com a complexidade de um prontuário odontológico, que engloba dados mistos (texto, seleções categóricas, medidas e odontogramas), recomenda-se a separação clara entre a interface de usuário (\textit{front-end}) e a lógica de negócio (\textit{back-end}), usualmente por meio de APIs REST. Essa separação torna o sistema modular e permite delegar tarefas especializadas, como a análise estatística e a inferência dos modelos de IA, a serviços independentes, sem comprometer a fluidez do atendimento clínico.
+
+\subsection{Tecnologias aplicadas à saúde e análise de dados}
+
+O ecossistema JavaScript, frequentemente adotado em pilhas como a MERN (MongoDB, Express.js, React e Node.js), viabiliza sistemas responsivos e personalizados para prontuários eletrônicos \cite{singhal2025}. A uniformidade da linguagem entre as camadas facilita o fluxo de dados entre cliente e servidor \cite{singhal2025}.
+
+No \textit{front-end}, formulários clínicos complexos, como odontogramas e mapas de dor, exigem uma abordagem modular. A biblioteca React, com sua arquitetura baseada em componentes, permite interfaces reutilizáveis e de fácil manutenção, e a otimização desses componentes evita re-renderizações desnecessárias mesmo em formulários extensos \cite{parida2024}. No \textit{back-end}, o modelo de entrada e saída não bloqueante do Node.js permite atender requisições concorrentes de dezenas de usuários com eficiência \cite{parida2024}.
+
+Para que os dados transcendam o registro administrativo, o ecossistema Python tem se mostrado adequado para transformar registros de prontuário em conhecimento aplicável \cite{zalke2026}. A biblioteca Pandas oferece estruturas de alto desempenho para a transformação, a limpeza e a análise estatística de dados tabulares heterogêneos \cite{zalke2026}.
+
+\subsection{Persistência híbrida: relacional e documental}
+\label{sec:jsonb}
+
+A pilha MERN utiliza o MongoDB, um banco orientado a documentos que oferece flexibilidade de esquema, mas abre mão de garantias relacionais importantes em dados clínicos, como chaves estrangeiras e integridade referencial. Bancos estritamente relacionais oferecem essas garantias, mas estruturas anatômicas como o odontograma (32 dentes com até cinco faces cada) e o mapa de palpação exigiriam um grande número de tabelas e junções quando totalmente normalizadas, prejudicando o desempenho de leitura.
+
+O PostgreSQL permite combinar as duas abordagens: o tipo \texttt{JSONB} armazena documentos JSON em formato binário, indexável e consultável por operadores próprios, dentro de tabelas relacionais convencionais \cite{postgres-json}. Campos de documentos JSONB podem ainda ser expostos como colunas geradas e indexadas, o que alia a flexibilidade do modelo documental ao desempenho de consultas analíticas. Essa é a estratégia adotada neste trabalho (\autoref{sec:modelagem}).
+
+\section{Avaliação de usabilidade}
+\label{sec:usabilidade}
+
+A adoção de um prontuário eletrônico depende da aceitação de quem o utiliza durante o atendimento. A \textit{System Usability Scale} (SUS) \cite{brooke1996} é um questionário de dez itens em escala Likert que produz um escore de 0 a 100. Pela ampla base de comparação disponível, o escore permite classificar a usabilidade percebida de um sistema \cite{bangor2008}. Para a carga de trabalho percebida na execução de tarefas, o NASA-TLX \cite{hart1988} é um instrumento consolidado.
+
+Quanto ao número de participantes, \citeonline{nielsen1993} demonstraram que poucos usuários são suficientes para revelar a maior parte dos problemas de usabilidade de uma interface, o que torna viáveis avaliações com amostras pequenas, desde que complementadas por medidas objetivas de desempenho, como tempo de execução e taxa de erros.
