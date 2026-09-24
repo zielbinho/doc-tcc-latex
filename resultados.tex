@@ -29,29 +29,67 @@ A partir desse esquema, foi construído o modelo de dados híbrido da \autoref{f
 
 \section{Sistema desenvolvido}
 
-\todo{descrever cada tela, relacionando-a aos requisitos do \autoref{qua:requisitos}.}
+A interface foi implementada em React e consome exclusivamente a API. As telas foram capturadas automaticamente por um roteiro do Playwright executado sobre o ambiente de desenvolvimento com dados sintéticos, o que torna as figuras reprodutíveis a cada versão do sistema.
+
+A tela do paciente (\autoref{fig:tela-paciente}) reúne os atendimentos, com o status e a completude de cada ficha, os dados pessoais (decifrados apenas para quem tem acesso), os tratamentos e os consentimentos. Quando não há TCLE registrado, a tela o sinaliza antes da abertura de um atendimento (RF02, RF03).
 
 \begin{figure}[htbp]
-	\caption{Tela de preenchimento da anamnese}
-	\label{fig:tela-anamnese}
+	\caption{Tela do paciente}
+	\label{fig:tela-paciente}
 	\centering
-	\figtodo{captura da tela da ficha gerada a partir do esquema}
-	\fonte{Os autores (2026).}
+	\includegraphics[width=\textwidth]{figuras/03-paciente}
+	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
+O editor da ficha (\autoref{fig:tela-anamnese}) é gerado inteiramente a partir do esquema JSON: cada seção da ficha em papel aparece na navegação lateral com a contagem de campos preenchidos, e cada campo recebe o controle adequado ao seu tipo. Listas de opções viram botões, respostas sim/não viram um par de botões, as escalas de 0 a 10 viram uma régua colorida, e medidas em milímetros viram campos numéricos. O número da questão no papel acompanha cada campo, o que facilita a transição dos alunos habituados à ficha impressa. Campos condicionais, como os medicamentos em uso, só aparecem quando a resposta de controle os torna aplicáveis, e o valor é descartado se a resposta mudar. A validação ocorre no próprio navegador, com o mesmo esquema e as mesmas mensagens usados pela API.
+
 \begin{figure}[htbp]
-	\caption{Odontograma e mapa de palpação interativos}
+	\caption{Editor da ficha: seção de história médica}
+	\label{fig:tela-anamnese}
+	\centering
+	\includegraphics[width=\textwidth]{figuras/04-ficha-historia-medica}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+
+A palpação muscular e articular (questões 43 a 45) é registrada em um mapa facial esquemático (\autoref{fig:tela-palpacao}), no qual cada sítio muda de cor conforme a intensidade de 0 a 3. Ao lado há uma tabela equivalente, mais precisa ao toque e acessível por teclado. O odontograma (\autoref{fig:tela-odontograma}) segue a numeração FDI. Cada dente tem cinco faces clicáveis, marcadas segundo a ferramenta escolhida, e a face mesial fica sempre voltada para a linha média. Ao selecionar um dente, é possível registrar sua ausência e condições como tratamento endodôntico ou recessão (RF04).
+
+\begin{figure}[htbp]
+	\caption{Mapa de palpação muscular e articular}
+	\label{fig:tela-palpacao}
+	\centering
+	\includegraphics[width=\textwidth]{figuras/06-mapa-palpacao}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+\begin{figure}[htbp]
+	\caption{Odontograma com marcações de exemplo}
 	\label{fig:tela-odontograma}
 	\centering
-	\figtodo{capturas do odontograma e do mapa facial de palpação}
-	\fonte{Os autores (2026).}
+	\includegraphics[width=\textwidth]{figuras/08-odontograma}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+
+As seções de decisão clínica são identificadas na navegação e no cabeçalho da seção como exclusivas do examinador (\autoref{fig:tela-diagnostico}), reforçando para o usuário a restrição que o esquema impõe ao módulo de IA. O professor acompanha as fichas enviadas pelos alunos em uma fila de revisão (\autoref{fig:tela-revisao}) e, ao abrir cada uma, pode devolvê-la com um comentário ou aprová-la (RF05). Após a aprovação, a ficha é exibida somente para leitura, com a opção de registrar um adendo (RF06).
+
+\begin{figure}[htbp]
+	\caption{Seção de diagnóstico, exclusiva do examinador}
+	\label{fig:tela-diagnostico}
+	\centering
+	\includegraphics[width=\textwidth]{figuras/07-diagnostico-somente-humano}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+\begin{figure}[htbp]
+	\caption{Fila de revisão do professor}
+	\label{fig:tela-revisao}
+	\centering
+	\includegraphics[width=\textwidth]{figuras/09-fila-revisao}
+	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
 \begin{figure}[htbp]
 	\caption{Revisão das sugestões da IA com o trecho de evidência}
 	\label{fig:tela-revisao-ia}
 	\centering
-	\figtodo{captura da tela de revisão (aceitar, editar, rejeitar)}
+	\figtodo{captura da tela de revisão (aceitar, editar, rejeitar), após a fase 4}
 	\fonte{Os autores (2026).}
 \end{figure}
 
@@ -59,7 +97,7 @@ A partir desse esquema, foi construído o modelo de dados híbrido da \autoref{f
 	\caption{Painel de evolução clínica do paciente}
 	\label{fig:tela-painel}
 	\centering
-	\figtodo{captura do painel do paciente: dor, abertura bucal, mapa de calor e linha do tempo de tratamentos}
+	\figtodo{captura do painel do paciente, após a fase 5}
 	\fonte{Os autores (2026).}
 \end{figure}
 
@@ -81,7 +119,7 @@ A partir desse esquema, foi construído o modelo de dados híbrido da \autoref{f
 	\fonte{Os autores (2026).}
 \end{table}
 
-Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. A \autoref{tb:testes} resume os 73 testes da versão atual.
+Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 98 testes da versão atual.
 
 \begin{table}[htbp]
 	\caption{Testes automatizados por componente}
@@ -91,14 +129,16 @@ Os requisitos de segurança e de integridade são verificados por testes automat
 	\begin{tabularx}{\textwidth}{|L{3.8cm}|Y|c|}
 		\hline
 		\textbf{Componente} & \textbf{O que é verificado} & \textbf{Testes} \\ \hline
-		Esquema da ficha & Validade, cobertura das questões 1 a 75, esquema derivado para a IA, completude & 26 \\ \hline
+		Esquema da ficha & Validade, cobertura das questões 1 a 75, esquema derivado para a IA, rótulos, campos condicionais, completude & 30 \\ \hline
 		API: autenticação & Argon2id, \textit{cookie}, bloqueio, sessão, auditoria de acesso & 9 \\ \hline
-		API: controle de acesso & Matriz de papéis na API e \textit{Row-Level Security} diretamente no banco & 9 \\ \hline
+		API: controle de acesso & Matriz de papéis na API e \textit{Row-Level Security} diretamente no banco & 10 \\ \hline
 		API: pacientes & Cifragem dos dados pessoais, busca por CPF via HMAC, validação, auditoria & 6 \\ \hline
 		API: fichas & Fluxo de revisão, imutabilidade, adendos, colunas geradas, odontograma & 7 \\ \hline
 		API: esquema analítico & Isolamento do papel analítico, pseudônimos, ausência de textos livres & 5 \\ \hline
+		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma & 18 \\ \hline
+		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, persistência, revisão, aprovação) e restrição de telas por papel & 2 \\ \hline
 		Gerador de casos sintéticos & Validade, reprodutibilidade e coerência clínica & 11 \\ \hline
-		\textbf{Total} & & \textbf{73} \\ \hline
+		\textbf{Total} & & \textbf{98} \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
 \end{table}
