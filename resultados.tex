@@ -110,6 +110,57 @@ A tela do paciente passou a exibir a evolução clínica calculada a partir das 
 	\fonte{Os autores (2026), com um paciente da coorte sintética.}
 \end{figure}
 
+O administrador gerencia os usuários e consulta a trilha de auditoria (\autoref{fig:tela-auditoria}), que registra cada acesso e alteração com data, usuário, ação e identificador do registro, sem conteúdo clínico nem dados pessoais. A figura mostra também o tema escuro, que o usuário pode escolher no cabeçalho ou deixar acompanhar a configuração do sistema operacional.
+
+\begin{figure}[htbp]
+	\caption{Trilha de auditoria vista pelo administrador, no tema escuro}
+	\label{fig:tela-auditoria}
+	\centering
+	\includegraphics[width=\textwidth]{figuras/17-auditoria-escuro}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+
+A interface foi verificada também na largura de um \textit{tablet} na vertical, de 768 pixels (\autoref{fig:tela-tablet}). A verificação encontrou um defeito: nessa largura, a barra de seções da ficha alargava a página para mais de 2.000 pixels, obrigando a rolar na horizontal. Corrigido o defeito, um teste de ponta a ponta passou a verificar que as telas principais cabem nessa largura.
+
+\begin{figure}[htbp]
+	\caption{Exame clínico da ficha na largura de um \textit{tablet} (768 pixels)}
+	\label{fig:tela-tablet}
+	\centering
+	\includegraphics[width=0.6\textwidth]{figuras/18-ficha-tablet}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+
+\subsection{Atendimento dos requisitos}
+
+O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:requisitos} ao que foi implementado e à evidência correspondente. Todos os requisitos funcionais foram atendidos. Dois requisitos não funcionais foram atendidos apenas em parte, porque dependem da implantação no servidor da instituição, que não foi realizada.
+
+\begin{quadro}[htbp]
+	\caption{Atendimento dos requisitos funcionais e não funcionais}
+	\label{qua:atendimento-requisitos}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{1.2cm}|L{1.6cm}|Y|}
+		\hline
+		\textbf{ID} & \textbf{Situação} & \textbf{Implementação e evidência} \\ \hline
+		RF01 & Atendido & Senhas com Argon2id, sessão em \textit{cookie} e quatro papéis, verificados na API e no banco; testes de autenticação, de acesso e de ataque. O segundo fator de autenticação, previsto de início, não foi implementado \\ \hline
+		RF02 & Atendido & Cadastro e busca por nome, prontuário ou CPF (índice HMAC); consentimentos de TCLE, gravação de áudio e pesquisa (\autoref{fig:tela-paciente}) \\ \hline
+		RF03 & Atendido & Fichas inicial e de retorno geradas a partir dos esquemas JSON (\autoref{fig:tela-anamnese}) \\ \hline
+		RF04 & Atendido & Odontograma na notação FDI e mapa de palpação com tabela equivalente (Figuras~\ref{fig:tela-palpacao} e~\ref{fig:tela-odontograma}) \\ \hline
+		RF05 & Atendido & Fila de revisão, devolução com comentário e aprovação (\autoref{fig:tela-revisao}); fluxo testado de ponta a ponta \\ \hline
+		RF06 & Atendido & Gatilho no banco impede alterar ou excluir ficha aprovada, até pelo dono das tabelas; adendos versionados \\ \hline
+		RF07 & Atendido & Transcrição local, sugestões com trecho de evidência e decisão individual por campo, sem aceite em lote (\autoref{fig:tela-revisao-ia}); Experimentos A e B \\ \hline
+		RF08 & Atendido & Painel de evolução com dor, abertura bucal, sítios dolorosos, GCPS, palpação por consulta e período de tratamento (\autoref{fig:tela-painel}) \\ \hline
+		RF09 & Atendido & Painel da coorte (\autoref{fig:painel-coorte}) e exportação em CSV, ambos sobre o esquema pseudonimizado e auditados \\ \hline
+		RF10 & Atendido & Trilha somente de inserção, com leituras e alterações de pacientes, fichas, painéis e exportações (\autoref{fig:tela-auditoria}) \\ \hline
+		RNF01 & Atendido & Cifragem dos dados pessoais, RLS, pseudonimização com segredo separado, visões analíticas sem texto livre; revisão de segurança \\ \hline
+		RNF02 & Parcial & Todos os serviços, inclusive os modelos de IA, executam localmente, sem chamadas externas; a implantação no servidor da UEPG não foi realizada \\ \hline
+		RNF03 & Atendido & PostgreSQL, Node.js, React, Python, Ollama, Qwen2.5, Whisper e Caddy, todos gratuitos e de código aberto \\ \hline
+		RNF04 & Atendido & Interface responsiva; telas principais verificadas em 768 pixels por teste automatizado (\autoref{fig:tela-tablet}) \\ \hline
+		RNF05 & Parcial & Configuração com seis contêineres escrita, mas não executada, por falta de Docker no ambiente de desenvolvimento \\ \hline
+		RNF06 & Atendido & Cada ficha registra a versão do esquema com que foi gravada; mudanças na ficha geram nova versão do esquema \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+
 \section{Avaliação técnica}
 
 \begin{table}[htbp]
@@ -133,7 +184,7 @@ A \autoref{tb:benchmark} mostra que o modelo híbrido foi mais rápido nas opera
 
 O modelo normalizado foi mais rápido apenas na consulta analítica sobre todas as fichas: 1,7 vez com 10.000 pacientes (0,15~s contra 0,25~s), porque percorre uma tabela estreita, enquanto o híbrido precisa abrir cada documento. Essa diferença pesa pouco no sistema: as análises de coorte são feitas pelo serviço analítico sobre o esquema pseudonimizado, fora do caminho das telas clínicas, e, se uma consulta desse tipo se tornar frequente, um índice sobre a expressão \texttt{JSONB} pode acelerá-la sem mudar o modelo. O resultado sustenta a escolha do modelo híbrido (\autoref{sec:modelagem}), com a ressalva de que a medição foi feita em um único computador e com dados sintéticos.
 
-Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 249 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, o que torna os testes rápidos e determinísticos; um teste adicional, executado sob demanda, percorre o fluxo de ditado no navegador com o modelo real.
+Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 250 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, o que torna os testes rápidos e determinísticos; um teste adicional, executado sob demanda, percorre o fluxo de ditado no navegador com o modelo real.
 
 \begin{table}[htbp]
 	\caption{Testes automatizados por componente}
@@ -156,9 +207,9 @@ Os requisitos de segurança e de integridade são verificados por testes automat
 		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\ \hline
 		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, ausência de aceite em lote, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\ \hline
 		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, serviço (\textit{endpoints}) & 38 \\ \hline
-		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, persistência, revisão, aprovação) e restrição de telas por papel & 2 \\ \hline
+		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, persistência, revisão, aprovação), restrição de telas por papel e ausência de rolagem horizontal na largura de um \textit{tablet} & 3 \\ \hline
 		Geradores de dados sintéticos & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 24 \\ \hline
-		\textbf{Total} & & \textbf{249} \\ \hline
+		\textbf{Total} & & \textbf{250} \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
 \end{table}
@@ -195,7 +246,27 @@ As duas estratégias chegaram a F1 geral semelhante (0,58 e 0,59 na saída bruta
 
 As salvaguardas funcionaram na direção esperada: reduziram a alucinação (de 0,69 para 0,53 por seção e de 0,32 para 0,25 na ficha inteira) e elevaram a precisão, com queda de cerca de 0,04 no F1. Elas não são, porém, precisas. Na ficha inteira, dos 93 valores descartados, 51 estavam corretos: o motivo mais frequente de descarte foi a evidência não encontrada literalmente no relato, que ocorre também quando o modelo reescreve a citação. As salvaguardas trocam, portanto, erros graves (valores inventados) por omissões, que o acadêmico preenche na revisão. A revisão humana continua indispensável: mesmo com as salvaguardas, 25\% dos campos que deveriam ficar vazios receberam algum valor.
 
-O desempenho variou entre as seções. Com a ficha inteira e as salvaguardas, o F1 foi de 0,69 na história odontológica, formada principalmente por campos fechados, de 0,51 na história médica, de 0,50 na queixa principal, de 0,46 na prótese e de apenas 0,22 nas observações. Os campos fechados chegaram a F1 de 0,63 e os de texto livre a 0,48; nestes, a medida automática subestima o acerto, porque penaliza paráfrases corretas, como ``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''.
+O desempenho variou entre as seções (\autoref{tb:exp-a-secoes}).
+
+\begin{table}[htbp]
+	\caption{$F_1$ da estruturação automática por seção da ficha}
+	\label{tb:exp-a-secoes}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\multirow{2}{*}{\textbf{Seção}} & \multicolumn{2}{c|}{\textbf{Por seção}} & \multicolumn{2}{c|}{\textbf{Ficha inteira}} \\ \cline{2-5}
+		& \textbf{Bruta} & \textbf{Salvaguardas} & \textbf{Bruta} & \textbf{Salvaguardas} \\ \hline
+		Queixa principal & 0,50 & 0,47 & 0,50 & 0,50 \\ \hline
+		História médica & 0,52 & 0,49 & 0,55 & 0,51 \\ \hline
+		História odontológica & 0,74 & 0,69 & 0,72 & 0,69 \\ \hline
+		Prótese & 0,60 & 0,56 & 0,60 & 0,46 \\ \hline
+		Observações & 0,00 & 0,00 & 0,19 & 0,22 \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026), com o modelo \texttt{qwen2.5:3b} e 30 casos de teste.}
+\end{table}
+
+Com a ficha inteira e as salvaguardas, o F1 foi de 0,69 na história odontológica, formada principalmente por campos fechados, de 0,51 na história médica, de 0,50 na queixa principal, de 0,46 na prótese e de apenas 0,22 nas observações. Na extração por seção, o campo de observações foi preenchido em todos os 30 casos e nunca corretamente: em 18 ele deveria ficar vazio, e nos outros 12 o conteúdo não correspondia ao esperado. Os campos fechados chegaram a F1 de 0,63 e os de texto livre a 0,48; nestes, a medida automática subestima o acerto, porque penaliza paráfrases corretas, como ``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''.
 
 A análise dos erros da saída bruta na ficha inteira revela quatro padrões:
 

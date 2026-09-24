@@ -145,7 +145,7 @@ Entidades com estrutura estável e relações que exigem integridade referencial
 	\begin{tabularx}{\textwidth}{|L{3cm}|Y|}
 		\hline
 		\textbf{Tabela} & \textbf{Conteúdo} \\ \hline
-		\texttt{usuario} & Nome, e-mail, \textit{hash} da senha (Argon2id), papel, segundo fator de autenticação \\ \hline
+		\texttt{usuario} & Nome, e-mail, \textit{hash} da senha (Argon2id), papel, situação (ativo ou bloqueado) \\ \hline
 		\texttt{paciente} & Número do prontuário, nome, data de nascimento, sexo; CPF, RG, contatos e endereço cifrados \\ \hline
 		\texttt{consentimento} & Tipo (TCLE, gravação, pesquisa), versão do termo, data e documento digitalizado \\ \hline
 		\texttt{atendimento} & Paciente, data, tipo (primeira consulta ou retorno), aluno, professor e situação \\ \hline
@@ -193,7 +193,7 @@ As medidas de segurança foram definidas a partir do marco legal (\autoref{sec:m
 	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
 		\hline
 		\textbf{Requisito} & \textbf{Implementação} \\ \hline
-		Autenticação & Senhas com Argon2id (parâmetros recomendados pela OWASP); sessão em \textit{cookie} \texttt{HttpOnly}, \texttt{Secure} e \texttt{SameSite=Strict}, com o \textit{token} armazenado apenas como \textit{hash}; bloqueio por 15 minutos após cinco tentativas; mesma resposta para e-mail inexistente e senha incorreta. Segundo fator (TOTP) para professores previsto \\ \hline
+		Autenticação & Senhas com Argon2id (parâmetros recomendados pela OWASP); sessão em \textit{cookie} \texttt{HttpOnly}, \texttt{Secure} e \texttt{SameSite=Strict}, com o \textit{token} armazenado apenas como \textit{hash}; bloqueio por 15 minutos após cinco tentativas; mesma resposta para e-mail inexistente e senha incorreta. Um segundo fator de autenticação (TOTP) para professores não foi implementado e fica como trabalho futuro \\ \hline
 		Controle de acesso & Controle por papéis (RBAC) na API e \textit{Row-Level Security} no PostgreSQL. A API conecta com um papel que não é dono das tabelas e informa o usuário a cada transação. O aluno só enxerga os pacientes que cadastrou ou atendeu, o professor enxerga todos, e administrador e pesquisador não enxergam dados clínicos identificados \\ \hline
 		Confidencialidade em trânsito & HTTPS em todas as comunicações \\ \hline
 		Confidencialidade em repouso & Campos identificadores cifrados com \texttt{pgcrypto}; disco do servidor cifrado; segredos fora do repositório de código \\ \hline
