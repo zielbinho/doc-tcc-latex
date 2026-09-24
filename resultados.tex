@@ -132,7 +132,7 @@ A interface foi verificada também na largura de um \textit{tablet} na vertical,
 
 \subsection{Atendimento dos requisitos}
 
-O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:requisitos} ao que foi implementado e à evidência correspondente. Todos os requisitos funcionais foram atendidos. Dois requisitos não funcionais foram atendidos apenas em parte, porque dependem da implantação no servidor da instituição, que não foi realizada.
+O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:requisitos} ao que foi implementado e à evidência correspondente. Todos os requisitos funcionais foram atendidos. Apenas o RNF02 foi atendido em parte: o sistema executa integralmente no próprio servidor, mas a implantação na infraestrutura da UEPG não foi realizada.
 
 \begin{quadro}[htbp]
 	\caption{Atendimento dos requisitos funcionais e não funcionais}
@@ -152,10 +152,10 @@ O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:
 		RF09 & Atendido & Painel da coorte (\autoref{fig:painel-coorte}) e exportação em CSV, ambos sobre o esquema pseudonimizado e auditados \\ \hline
 		RF10 & Atendido & Trilha somente de inserção, com leituras e alterações de pacientes, fichas, painéis e exportações (\autoref{fig:tela-auditoria}) \\ \hline
 		RNF01 & Atendido & Cifragem dos dados pessoais, RLS, pseudonimização com segredo separado, visões analíticas sem texto livre; revisão de segurança \\ \hline
-		RNF02 & Parcial & Todos os serviços, inclusive os modelos de IA, executam localmente, sem chamadas externas; a implantação no servidor da UEPG não foi realizada \\ \hline
+		RNF02 & Parcial & Todos os serviços, inclusive os modelos de IA, executam no próprio servidor, sem chamadas externas; a implantação foi validada em nuvem, com dados sintéticos, mas não no servidor da UEPG \\ \hline
 		RNF03 & Atendido & PostgreSQL, Node.js, React, Python, Ollama, Qwen2.5, Whisper e Caddy, todos gratuitos e de código aberto \\ \hline
 		RNF04 & Atendido & Interface responsiva; telas principais verificadas em 768 pixels por teste automatizado (\autoref{fig:tela-tablet}) \\ \hline
-		RNF05 & Parcial & Configuração com seis contêineres escrita, mas não executada, por falta de Docker no ambiente de desenvolvimento \\ \hline
+		RNF05 & Atendido & Seis contêineres descritos em um único arquivo Docker Compose; implantação validada em uma máquina virtual de nuvem, com HTTPS \\ \hline
 		RNF06 & Atendido & Cada ficha registra a versão do esquema com que foi gravada; mudanças na ficha geram nova versão do esquema \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
@@ -218,7 +218,29 @@ Entre as propriedades verificadas estão as seguintes. Um aluno não obtém, nem
 
 A revisão de segurança encontrou e corrigiu dois defeitos reais. O primeiro só aparecia com a política de segurança de conteúdo da implantação, que proíbe a execução de código gerado em tempo de execução (\texttt{script-src 'self'}): a biblioteca de validação compila os esquemas JSON em funções no próprio navegador, o que a política bloqueia, e a versão compilada da interface abria em branco. Os validadores passaram a ser gerados antes da compilação, como módulos comuns, e um teste garante que continuam atualizados e equivalentes aos gerados na hora. O fluxo completo da ficha passou a ser testado também sobre a versão compilada, servida com os mesmos cabeçalhos da implantação, e o teste falha diante de qualquer violação da política. O segundo defeito estava na ordem das verificações da API: uma requisição sem sessão com corpo inválido recebia a resposta de erro de validação (400) antes da de falta de autenticação (401), o que revelava a estrutura esperada pelas rotas a quem não estava autenticado. A verificação de sessão e de papel foi antecipada para antes da validação do corpo.
 
-Os demais testes de ataque passaram sem alterações no código: a busca de pacientes e o login tratam tentativas de injeção de SQL como texto comum, um aluno não distingue um paciente inexistente de um paciente de outro aluno, e as mensagens de erro não expõem detalhes do banco. O proxy da implantação envia os cabeçalhos de segurança HSTS (Strict-Transport-Security), CSP (Content-Security-Policy), X-Frame-Options, X-Content-Type-Options, Referrer-Policy e Permissions-Policy, este último liberando apenas o microfone, usado no ditado. A auditoria das dependências não encontrou vulnerabilidades conhecidas nos pacotes JavaScript; nos pacotes Python, apontou apenas versões antigas do \texttt{pip} e do \texttt{setuptools} no ambiente de desenvolvimento, que foram atualizadas, também nas imagens de contêiner. A varredura dinâmica com o OWASP ZAP, que depende do sistema implantado no servidor da instituição, não foi realizada.
+Os demais testes de ataque passaram sem alterações no código: a busca de pacientes e o login tratam tentativas de injeção de SQL como texto comum, um aluno não distingue um paciente inexistente de um paciente de outro aluno, e as mensagens de erro não expõem detalhes do banco. O proxy da implantação envia os cabeçalhos de segurança HSTS (Strict-Transport-Security), CSP (Content-Security-Policy), X-Frame-Options, X-Content-Type-Options, Referrer-Policy e Permissions-Policy, este último liberando apenas o microfone, usado no ditado. A auditoria das dependências não encontrou vulnerabilidades conhecidas nos pacotes JavaScript; nos pacotes Python, apontou apenas versões antigas do \texttt{pip} e do \texttt{setuptools} no ambiente de desenvolvimento, que foram atualizadas, também nas imagens de contêiner. As varreduras do OWASP ZAP sobre o sistema implantado estão resumidas na \autoref{tb:zap}. Nenhuma encontrou vulnerabilidade de risco alto nem falha nas regras de ataque ativo, que incluem injeção de SQL e de comandos, \textit{cross-site scripting}, inclusão de arquivos e travessia de diretórios, aplicadas às páginas, ao formulário de acesso e à busca de pacientes.
+
+\begin{table}[htbp]
+	\caption{Alertas das varreduras do OWASP ZAP por nível de risco}
+	\label{tb:zap}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\textbf{Varredura} & \textbf{Alto} & \textbf{Médio} & \textbf{Baixo} & \textbf{Informativo} \\ \hline
+		Passiva, antes das correções & 0 & 1 & 3 & 4 \\ \hline
+		Passiva, depois das correções & 0 & 0 & 0 & 4 \\ \hline
+		Completa (ativa), 140 regras & 0 & 1 & 0 & 4 \\ \hline
+		API (ativa), 118 regras & 0 & 0 & 1 & 3 \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026), com o OWASP ZAP sobre a implantação em nuvem.}
+\end{table}
+
+A varredura passiva apontou, como risco médio, a permissão de estilos embutidos na política de segurança de conteúdo (\texttt{style-src 'unsafe-inline'}) e, como riscos baixos, a ausência dos cabeçalhos de isolamento entre origens (Cross-Origin-Opener-Policy, Cross-Origin-Embedder-Policy e Cross-Origin-Resource-Policy). Como a interface aplica os poucos estilos dinâmicos por JavaScript, e não por atributos no HTML, a permissão pôde ser retirada sem mudança no código, o que foi confirmado pelo teste de ponta a ponta sobre a versão compilada; os três cabeçalhos foram acrescentados ao proxy. Na nova varredura restaram apenas alertas informativos: orientações sobre \textit{cache} de arquivos estáticos e um ``comentário suspeito'' que é falso positivo, pois a regra procura a palavra inglesa \textit{TODO} e a encontrou no rótulo ``O tempo todo'' de uma opção da ficha.
+
+A varredura completa apontou a identificação do servidor intermediário (\textit{proxy disclosure}). A investigação revelou um problema mais sério do que o próprio alerta: nas respostas de erro, como a recusa dos métodos TRACE e OPTIONS, o Caddy descartava todos os cabeçalhos configurados, inclusive os de segurança, e voltava a se identificar. Os cabeçalhos passaram a ser aplicados também às respostas de erro, e foram removidas as demais formas de identificação: os cabeçalhos Server, Via e Alt-Svc, inclusive no redirecionamento de HTTP para HTTPS. Mesmo assim, o ZAP continuou reconhecendo o Caddy pelo padrão de comportamento das respostas. O alerta remanescente expõe apenas o nome do programa, sem versão, e foi aceito como risco residual. Na varredura da API, guiada pela descrição OpenAPI, o único alerta de risco baixo decorre de endereços inexistentes, como \texttt{/api}, receberem a página HTML da interface, comportamento esperado de uma aplicação de página única.
+
+A implantação em nuvem também permitiu observar o desempenho fora do computador de desenvolvimento. Na máquina virtual, com 2 vCPUs e sem GPU, a primeira estruturação de um relato curto da história médica, com quatro sugestões corretas, levou cerca de 2~minutos, dos quais parte corresponde ao carregamento do modelo na memória; o restante do sistema respondeu sem atraso perceptível.
 
 \section{Experimento A: qualidade da estruturação automática}
 \label{sec:res-exp-a}
@@ -246,8 +268,6 @@ As duas estratégias chegaram a F1 geral semelhante (0,58 e 0,59 na saída bruta
 
 As salvaguardas funcionaram na direção esperada: reduziram a alucinação (de 0,69 para 0,53 por seção e de 0,32 para 0,25 na ficha inteira) e elevaram a precisão, com queda de cerca de 0,04 no F1. Elas não são, porém, precisas. Na ficha inteira, dos 93 valores descartados, 51 estavam corretos: o motivo mais frequente de descarte foi a evidência não encontrada literalmente no relato, que ocorre também quando o modelo reescreve a citação. As salvaguardas trocam, portanto, erros graves (valores inventados) por omissões, que o acadêmico preenche na revisão. A revisão humana continua indispensável: mesmo com as salvaguardas, 25\% dos campos que deveriam ficar vazios receberam algum valor.
 
-O desempenho variou entre as seções (\autoref{tb:exp-a-secoes}).
-
 \begin{table}[htbp]
 	\caption{$F_1$ da estruturação automática por seção da ficha}
 	\label{tb:exp-a-secoes}
@@ -266,7 +286,7 @@ O desempenho variou entre as seções (\autoref{tb:exp-a-secoes}).
 	\fonte{Os autores (2026), com o modelo \texttt{qwen2.5:3b} e 30 casos de teste.}
 \end{table}
 
-Com a ficha inteira e as salvaguardas, o F1 foi de 0,69 na história odontológica, formada principalmente por campos fechados, de 0,51 na história médica, de 0,50 na queixa principal, de 0,46 na prótese e de apenas 0,22 nas observações. Na extração por seção, o campo de observações foi preenchido em todos os 30 casos e nunca corretamente: em 18 ele deveria ficar vazio, e nos outros 12 o conteúdo não correspondia ao esperado. Os campos fechados chegaram a F1 de 0,63 e os de texto livre a 0,48; nestes, a medida automática subestima o acerto, porque penaliza paráfrases corretas, como ``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''.
+O desempenho variou entre as seções (\autoref{tb:exp-a-secoes}). Com a ficha inteira e as salvaguardas, o F1 foi de 0,69 na história odontológica, formada principalmente por campos fechados, de 0,51 na história médica, de 0,50 na queixa principal, de 0,46 na prótese e de apenas 0,22 nas observações. Na extração por seção, o campo de observações foi preenchido em todos os 30 casos e nunca corretamente: em 18 ele deveria ficar vazio, e nos outros 12 o conteúdo não correspondia ao esperado. Os campos fechados chegaram a F1 de 0,63 e os de texto livre a 0,48; nestes, a medida automática subestima o acerto, porque penaliza paráfrases corretas, como ``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''.
 
 A análise dos erros da saída bruta na ficha inteira revela quatro padrões:
 
