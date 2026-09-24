@@ -289,7 +289,9 @@ O modelo de referência do desenvolvimento é o Qwen2.5 de 3 bilhões de parâme
 \section{Módulo analítico}
 \label{sec:metodo-analitico}
 
-O módulo analítico lê exclusivamente o esquema pseudonimizado, converte os documentos das fichas em tabelas com o Pandas e disponibiliza os resultados à interface por meio de uma API. Os indicadores estão organizados em três níveis.
+O módulo analítico é um serviço em Python (FastAPI, Pandas e SciPy) que lê exclusivamente o esquema pseudonimizado, com o papel \texttt{lord\_analitico}, e converte os documentos das fichas em tabelas. A interface não o acessa diretamente: a API principal verifica o papel do usuário, registra a consulta na auditoria e repassa o resultado. Os indicadores estão organizados em três níveis.
+
+Os indicadores individuais têm uma única implementação, usada tanto pelo painel da coorte quanto pela tela do paciente. No segundo caso, o paciente é identificado e o acesso segue a RLS; por isso, é a API que lê as fichas aprovadas do paciente e envia ao serviço analítico apenas as seções usadas nos cálculos (questionário de dor e exame), sem nome, datas ou textos livres. Desse modo, o serviço analítico nunca acessa tabelas identificadas.
 
 \subsection{Indicadores individuais}
 
@@ -319,26 +321,31 @@ A intensidade característica da dor (ICD) e o escore de incapacidade (EI) são 
 
 \subsection{Indicadores de coorte}
 
+O desfecho principal é a variação relativa da intensidade característica da dor (ICD) entre a ficha inicial e o último retorno aprovado, positiva quando a dor diminui e calculada apenas quando a ICD inicial é maior que zero. O grupo de cada paciente é a categoria do primeiro tratamento registrado. São calculados:
+
 \begin{itemize}
-	\item prevalência das características relatadas (estalido, crepitação, apertamento diurno e noturno, rigidez matinal, zumbido) e de cefaleia;
+	\item prevalência das características relatadas (estalido, crepitação, apertamento diurno e noturno, mordida desconfortável, rigidez matinal, zumbido) e de cefaleia;
 	\item distribuição dos diagnósticos do Eixo~I, registrados pelos professores;
-	\item variação da dor entre a consulta inicial e a mais recente, por categoria de tratamento, com teste de Wilcoxon pareado dentro de cada grupo e teste de Kruskal-Wallis entre grupos, acompanhados de tamanho de efeito;
+	\item redução média por tratamento, com intervalo de confiança de 95\% pela distribuição $t$, teste de Wilcoxon pareado dentro de cada grupo, com a correlação rank-bisserial como tamanho de efeito, e teste de Kruskal-Wallis entre os grupos, com $\varepsilon^2$ como tamanho de efeito; grupos com menos de cinco pacientes não recebem teste;
 	\item proporção de pacientes com redução da dor de pelo menos 30\% (melhora moderadamente importante) e de pelo menos 50\% (melhora substancial), conforme o IMMPACT \cite{dworkin2008};
-	\item correlação de Spearman entre variáveis psicossociais (sono, ansiedade) e intensidade da dor;
-	\item taxa de abandono do tratamento, definida como a ausência de retorno por período superior ao combinado.
+	\item correlação de Spearman, na linha de base, entre a ICD e o número de sítios dolorosos, o número de atividades limitadas e a abertura máxima, e entre o escore de incapacidade e as atividades limitadas;
+	\item taxa de abandono, definida como tratamento em aberto e ausência de retorno há mais de 60 dias.
 \end{itemize}
+
+A análise é feita também separadamente para os pacientes que concluíram o tratamento, pois a inclusão de quem abandonou antes do efeito pleno reduz a variação média observada. A correlação entre sono, ansiedade e dor, prevista inicialmente, não pôde ser implementada: na ficha atual, sono e ansiedade são registrados como texto livre (questão 5), que fica fora do esquema pseudonimizado por poder conter identificadores. Uma versão futura da ficha pode registrá-los em escalas estruturadas.
 
 \subsection{Indicadores de qualidade dos dados}
 
 \begin{itemize}
-	\item \textbf{completude}: proporção de campos obrigatórios preenchidos por ficha;
-	\item \textbf{tempo de preenchimento} por seção;
-	\item \textbf{taxa de aceitação} das sugestões da IA, por campo e por seção.
+	\item \textbf{completude}: proporção de campos obrigatórios preenchidos por ficha, por tipo e status da ficha;
+	\item \textbf{taxa de aceitação} das sugestões da IA (aceitas sem alteração ou editadas, sobre o total de decisões), por seção e por versão do \textit{prompt}.
 \end{itemize}
+
+As decisões sobre as sugestões chegam ao esquema pseudonimizado sem o relato, a transcrição, a saída do modelo ou o valor sugerido: apenas a seção, o campo, a decisão, o modelo e a versão do \textit{prompt}. O tempo de preenchimento não é registrado pelo sistema e é medido no Experimento~C.
 
 \subsection{Visualizações}
 
-São disponibilizados três painéis: (i) do paciente, com a evolução da dor, da abertura bucal e dos tratamentos em linha do tempo e um mapa facial de calor da palpação por consulta; (ii) da coorte, com diagramas de caixa da variação da dor por tratamento e gráficos de prevalência; e (iii) de qualidade dos dados.
+São disponibilizados três painéis: (i) do paciente, para aluno e professor, com a evolução da dor, da abertura bucal e dos tratamentos em linha do tempo e um mapa facial de calor da palpação por consulta; (ii) da coorte, para professor e pesquisador, com diagramas de caixa da variação da dor por tratamento, tabela com os testes estatísticos e gráficos de prevalência; e (iii) de qualidade dos dados, que o administrador também acessa. Os gráficos seguem regras de visualização acessível: um único eixo vertical por gráfico, cores fixas por tratamento validadas para as formas comuns de daltonismo nos temas claro e escuro, rótulos diretos, e os mesmos números em tabela, para quem não distingue as cores ou usa leitor de tela.
 
 A análise da eficácia dos tratamentos exige que as mesmas medidas sejam repetidas nos retornos. Como a ficha atual é de primeira consulta, foi definida com a Liga uma \emph{ficha de retorno} reduzida, com as questões 16 a 22, 39, 44 e 45, a adesão ao tratamento e as intercorrências, além de uma lista fechada de categorias de tratamento. \todo{confirmar com a LORD o conteúdo da ficha de retorno e a lista de tratamentos.}
 
@@ -402,7 +409,11 @@ Campos categóricos, booleanos e numéricos são comparados por igualdade exata;
 \subsection{Experimento D: validação do pipeline analítico}
 \label{sec:exp-analitico}
 
-Foi gerada uma coorte sintética de \todo{150} pacientes com \todo{4 a 6} consultas cada, com trajetórias de dor \emph{programadas}: por exemplo, redução média de 40\% no grupo com placa oclusal e de 10\% no grupo apenas com orientações, acrescidas de ruído aleatório e de abandono. O módulo analítico é aplicado a essa coorte e deve recuperar os efeitos programados. Por ter efeito conhecido, a coorte valida objetivamente o cálculo dos indicadores e dos testes estatísticos, sem pretender produzir conclusões clínicas.
+Foi gerada uma coorte sintética de 150 pacientes, com semente fixa (2026), com trajetórias de dor \emph{programadas}. Cada paciente tem uma ficha inicial coerente, produzida pelo mesmo gerador dos casos da \autoref{sec:casos}, restrito aos perfis com DTM e com dor. Os pacientes são alocados por sorteio, em grupos de mesmo tamanho, a três tratamentos com redução média programada da dor de 40\% (placa oclusal), 25\% (laser de baixa intensidade) e 10\% (orientações de autocuidado).
+
+A resposta de cada paciente é sorteada de uma distribuição normal centrada no efeito do seu grupo, com desvio-padrão de 15 pontos percentuais. A redução cresce linearmente até o 90.º dia e depois se mantém. Os retornos ocorrem nos dias 30, 60, 90, 120 e 180, com variação de até sete dias. Em cada retorno, as escalas de dor de 0 a 10 (questões 16 a 22) são reduzidas conforme o efeito individual, com ruído de medida de desvio-padrão 0,7 e arredondamento para inteiros. A palpação e a abertura bucal acompanham a melhora, também com ruído. Por fim, 20\% dos pacientes abandonam o tratamento em um ponto sorteado, inclusive antes do primeiro retorno. Toda ficha de retorno é validada contra o esquema.
+
+A coorte é carregada no banco pela própria API e analisada a partir das visões pseudonimizadas; o mesmo cálculo é repetido diretamente sobre os dados do gerador, e os dois resultados devem coincidir. Os critérios de sucesso são: (i) o intervalo de confiança de 95\% da redução estimada contém a redução programada em cada grupo; (ii) a ordem das reduções estimadas reproduz a programada; e (iii) o abandono detectado coincide com o programado. Por ter efeito conhecido, a coorte valida objetivamente o cálculo dos indicadores e dos testes estatísticos, sem pretender produzir conclusões clínicas.
 
 \subsection{Avaliação técnica}
 \label{sec:exp-tecnica}

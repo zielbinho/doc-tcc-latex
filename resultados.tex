@@ -99,12 +99,14 @@ A \autoref{fig:tela-revisao-ia} foi gerada por um teste automatizado de ponta a 
 
 A latência é o principal limite do módulo no ambiente de desenvolvimento, um computador pessoal sem GPU: com o \texttt{qwen2.5:3b}, a estruturação de uma seção isolada pela interface levou de 35 a 104~s, e a das cinco seções que admitem ditado, de 1,3 a 3,8~minutos por relato de desenvolvimento, a uma taxa de cerca de 8~\textit{tokens} por segundo. A transcrição de 14,5~s de áudio pelo Whisper \texttt{small} levou 5,7~s, depois do carregamento inicial do modelo. \todo{medir a latência no servidor da UEPG, com e sem GPU.}
 
+A tela do paciente passou a exibir a evolução clínica calculada a partir das fichas aprovadas (\autoref{fig:tela-painel}): a variação da intensidade característica da dor, da abertura bucal e do número de sítios dolorosos entre a primeira e a última consulta, os gráficos dessas medidas ao longo do tempo, com o período de tratamento sombreado, a tabela dos indicadores por consulta, incluindo o grau da GCPS, e o mapa de palpação da consulta escolhida. Cada medida tem o seu próprio gráfico, para que escalas diferentes (0 a 100 e milímetros) não dividam um mesmo eixo. Professores e pesquisadores têm ainda o painel da coorte, apresentado na \autoref{sec:res-exp-d}, e professores, pesquisadores e administradores, o painel de qualidade dos dados, com a completude das fichas e a taxa de aceitação das sugestões da IA por seção e por versão do \textit{prompt}.
+
 \begin{figure}[htbp]
 	\caption{Painel de evolução clínica do paciente}
 	\label{fig:tela-painel}
 	\centering
-	\figtodo{captura do painel do paciente, após a fase 5}
-	\fonte{Os autores (2026).}
+	\includegraphics[width=\textwidth]{figuras/12-evolucao-paciente}
+	\fonte{Os autores (2026), com um paciente da coorte sintética.}
 \end{figure}
 
 \section{Avaliação técnica}
@@ -125,7 +127,7 @@ A latência é o principal limite do módulo no ambiente de desenvolvimento, um 
 	\fonte{Os autores (2026).}
 \end{table}
 
-Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 142 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, o que torna os testes rápidos e determinísticos; um teste adicional, executado sob demanda, percorre o fluxo de ditado no navegador com o modelo real.
+Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 205 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, o que torna os testes rápidos e determinísticos; um teste adicional, executado sob demanda, percorre o fluxo de ditado no navegador com o modelo real.
 
 \begin{table}[htbp]
 	\caption{Testes automatizados por componente}
@@ -140,14 +142,16 @@ Os requisitos de segurança e de integridade são verificados por testes automat
 		API: controle de acesso & Matriz de papéis na API e \textit{Row-Level Security} diretamente no banco & 10 \\ \hline
 		API: pacientes & Cifragem dos dados pessoais, busca por CPF via HMAC, validação, auditoria & 6 \\ \hline
 		API: fichas & Fluxo de revisão, imutabilidade, adendos, colunas geradas, odontograma & 7 \\ \hline
-		API: esquema analítico & Isolamento do papel analítico, pseudônimos, ausência de textos livres & 5 \\ \hline
+		API: esquema analítico & Isolamento do papel analítico, pseudônimos, ausência de textos livres, tempo desde a última consulta, decisões da IA sem conteúdo & 8 \\ \hline
+		API: painéis analíticos & Papéis com acesso a cada painel, RLS na evolução do paciente, envio ao serviço analítico só das seções usadas nos indicadores, auditoria & 8 \\ \hline
 		API: sugestões da IA & Recusa de seções exclusivamente humanas e de fichas fora do rascunho, registro das sugestões e das decisões, falha do modelo, auditoria sem conteúdo & 7 \\ \hline
 		Módulo de IA & Montagem do \textit{prompt}, formato de saída, descarte pelas salvaguardas (com modelo simulado), métricas e retomada do Experimento~A, distinção entre falha de conexão e saída inválida & 14 \\ \hline
 		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\ \hline
-		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma e painel de ditado (aceitar, rejeitar, aceitar todas, edição posterior) & 24 \\ \hline
+		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, aceitar todas, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\ \hline
+		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, serviço (\textit{endpoints}) & 37 \\ \hline
 		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, persistência, revisão, aprovação) e restrição de telas por papel & 2 \\ \hline
-		Gerador de casos sintéticos & Validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo & 12 \\ \hline
-		\textbf{Total} & & \textbf{142} \\ \hline
+		Geradores de dados sintéticos & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 23 \\ \hline
+		\textbf{Total} & & \textbf{205} \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
 \end{table}
@@ -216,25 +220,53 @@ Entre as propriedades verificadas estão as seguintes. Um aluno não obtém, nem
 \todo{escore SUS médio e intervalo de confiança; resultado do teste de Friedman; taxa de aceitação das sugestões; problemas de usabilidade por severidade; síntese das entrevistas.}
 
 \section{Experimento D: validação do pipeline analítico}
+\label{sec:res-exp-d}
+
+A coorte sintética, com 150 pacientes e 786 consultas (150 fichas iniciais e 636 fichas de retorno), foi carregada no banco de desenvolvimento pela própria API, com validação pelo esquema, revisão e aprovação de cada ficha. O módulo analítico leu as visões do esquema pseudonimizado com o papel \texttt{lord\_analitico}. O mesmo cálculo feito diretamente sobre os dados do gerador, sem passar pelo banco, produziu resultados idênticos, o que confirma que a persistência, as colunas geradas e as visões não alteram os dados. A \autoref{tb:exp-d} compara os efeitos programados com os recuperados entre os pacientes que concluíram o tratamento.
 
 \begin{table}[htbp]
-	\caption{Efeitos programados e efeitos recuperados na coorte sintética}
+	\caption{Efeitos programados e efeitos recuperados na coorte sintética (pacientes que concluíram o tratamento)}
 	\label{tb:exp-d}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
 		\hline
-		\textbf{Tratamento} & \textbf{Redução programada} & \textbf{Redução estimada} & \textbf{$p$ (Wilcoxon)} & \textbf{Redução $\geq$ 30\%} \\ \hline
-		Placa oclusal & 40\% & -- & -- & -- \\ \hline
-		Orientações & 10\% & -- & -- & -- \\ \hline
+		\textbf{Grupo} & \textbf{Progr.} & \textbf{Sorteada} & \textbf{$n$} & \textbf{Estimada (IC 95\%)} & \textbf{$p$} & \textbf{$r$} & \textbf{$\geq$30\%} & \textbf{$\geq$50\%} \\ \hline
+		Placa & 40\% & 37,2\% & 41 & 38,0\% (32,6 a 43,5) & $<$0,001 & 1,00 & 68\% & 22\% \\ \hline
+		Laser & 25\% & 26,7\% & 37 & 24,0\% (18,2 a 29,8) & $<$0,001 & 0,96 & 43\% & 5\% \\ \hline
+		Orientações & 10\% & 4,8\% & 41 & 5,2\% ($-$0,4 a 10,8) & 0,082 & 0,32 & 7\% & 0\% \\ \hline
 	\end{tabular}
-	\fonte{Os autores (2026).}
+	\fonte{Os autores (2026). Placa: placa oclusal; Laser: laser de baixa intensidade; Orientações: orientações de autocuidado. Progr.: redução programada; Sorteada: média dos efeitos individuais sorteados para os pacientes que concluíram; $p$: teste de Wilcoxon pareado; $r$: correlação rank-bisserial; $\geq$30\% e $\geq$50\%: proporção de pacientes com redução de pelo menos 30\% e 50\%.}
 \end{table}
 
+Os três intervalos de confiança de 95\% contêm a redução programada, e as estimativas acompanham ainda mais de perto a média dos efeitos efetivamente sorteados para cada amostra, o que indica que a diferença entre o valor programado e o estimado se deve à amostragem, e não ao pipeline. O abandono detectado coincidiu exatamente com o programado em todos os grupos (18\%, 26\% e 18\%). Entre os grupos, o teste de Kruskal-Wallis indicou diferença ($H = 47{,}11$; $p < 0{,}001$; $\varepsilon^2 = 0{,}40$), e a ordem das reduções estimadas reproduziu a ordem programada (\autoref{fig:exp-d-variacao}).
+
+O grupo de orientações de autocuidado, com efeito sorteado de 4,8\%, não apresentou redução significativa ($p = 0{,}082$). Com 41 pacientes e a variabilidade individual programada, um efeito dessa magnitude fica abaixo do que o teste consegue detectar. Esse resultado é coerente com o planejado, e não uma falha: ele mostra que o módulo não produz significância onde o efeito é pequeno demais para a amostra. Considerando todos os pacientes com ao menos um retorno, inclusive os que abandonaram, as reduções estimadas foram menores (36,0\%, 22,3\% e 6,7\%), como esperado, pois quem abandona deixa o acompanhamento antes do efeito pleno.
+
 \begin{figure}[htbp]
-	\caption{Painel de coorte gerado a partir da coorte sintética}
-	\label{fig:painel-coorte}
+	\caption{Variação da intensidade característica da dor por tratamento na coorte sintética}
+	\label{fig:exp-d-variacao}
 	\centering
-	\figtodo{diagramas de caixa da variação da dor por tratamento e prevalência das características relatadas}
+	\includegraphics[width=0.85\textwidth]{figuras/15-exp-d-variacao}
+	\fonte{Os autores (2026). Caixas: quartis; losango: média estimada; tracejado vermelho: redução programada.}
+\end{figure}
+
+\begin{figure}[htbp]
+	\caption{Trajetória média da intensidade da dor por grupo, com intervalo de confiança de 95\%}
+	\label{fig:exp-d-trajetoria}
+	\centering
+	\includegraphics[width=0.85\textwidth]{figuras/16-exp-d-trajetoria}
 	\fonte{Os autores (2026).}
 \end{figure}
+
+A \autoref{fig:exp-d-trajetoria} mostra a forma programada das trajetórias: queda até o 90.º dia e estabilidade depois. A \autoref{fig:painel-coorte} mostra o mesmo resultado no painel da coorte do sistema, que apresenta ainda a prevalência das características relatadas, a distribuição dos diagnósticos do Eixo~I e as correlações na linha de base. Como as medidas da coorte sintética foram sorteadas de forma independente, as correlações de Spearman ficaram próximas de zero ($|\rho| \leq 0{,}15$), outro resultado coerente com a construção dos dados.
+
+\begin{figure}[htbp]
+	\caption{Painel da coorte no sistema, com a coorte sintética}
+	\label{fig:painel-coorte}
+	\centering
+	\includegraphics[width=\textwidth]{figuras/13-painel-coorte}
+	\fonte{Os autores (2026).}
+\end{figure}
+
+Por construção, esses números validam o cálculo dos indicadores e dos testes, e não dizem nada sobre a eficácia real dos tratamentos da Liga.
