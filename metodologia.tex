@@ -215,7 +215,7 @@ O módulo transforma o relato do acadêmico em sugestões de preenchimento da fi
 \begin{enumerate}
 	\item \textbf{Transcrição}: o áudio é transcrito localmente pelo faster-whisper \cite{fasterwhisper}, com um \textit{prompt} inicial contendo o vocabulário do domínio (ATM, masseter, crepitação, bruxismo, prótese parcial removível etc.); em seguida, o áudio é descartado;
 	\item \textbf{Estruturação}: a transcrição, ou o texto digitado, é enviada a um modelo de linguagem de pesos abertos executado pelo Ollama \cite{ollama}, com temperatura zero e saída restrita ao JSON Schema da seção correspondente, do qual foram removidos os campos marcados como exclusivamente humanos;
-	\item \textbf{Validação}: a saída é validada contra o esquema; valores sem trecho de evidência na transcrição são descartados;
+	\item \textbf{Validação}: a saída é validada contra o esquema e passa por verificações determinísticas, descritas adiante, que descartam valores sem evidência, com evidência ausente do relato ou incoerentes com a própria evidência;
 	\item \textbf{Revisão humana}: a interface exibe cada sugestão destacada, acompanhada do trecho que a justifica, com as opções aceitar, editar e rejeitar. Nenhum valor é gravado sem uma dessas ações.
 \end{enumerate}
 
@@ -231,28 +231,60 @@ Para cada campo, o modelo devolve o valor e o trecho de evidência, como no \aut
 
 \begin{lstlisting}[caption={Exemplo de sugestão gerada para a seção de história médica}, label=cod:saida-ia]
 {
-  "alergias": {
-    "valor": "dipirona",
+  "q3_alergias": {
+    "valor": "Dipirona (manchas na pele).",
     "evidencia": "tem alergia a dipirona, deu mancha na pele"
   },
-  "uso_medicamento": {
+  "q4_usa_medicamento": {
     "valor": true,
     "evidencia": "toma losartana faz uns dois anos"
   },
-  "historia_cirurgica": { "valor": null, "evidencia": null }
+  "q2_historico_cirurgico": { "valor": null, "evidencia": null }
 }
 \end{lstlisting}
+
+O formato de saída é gerado automaticamente a partir do esquema da seção: cada campo vira um par \texttt{valor}/\texttt{evidencia}, e o Ollama restringe a decodificação a esse formato (\textit{structured outputs}). A instrução enviada ao modelo é composta por regras fixas e por um guia dos campos, também derivado do esquema, com o título, a orientação de preenchimento e os códigos aceitos de cada campo, acompanhados de seus rótulos. Assim, uma alteração na ficha propaga-se ao \textit{prompt} sem edição manual.
+
+Antes de chegar à tela de revisão, cada valor passa por três verificações determinísticas, implementadas no pacote compartilhado da ficha e cobertas por testes automatizados:
+
+\begin{enumerate}
+	\item \textbf{existência de evidência}: valores sem trecho de evidência são descartados; o texto ``null'', que os modelos às vezes escrevem no lugar do valor nulo, é tratado como ausência;
+	\item \textbf{evidência presente no relato}: o trecho citado deve constar do relato após normalização de caixa, pontuação e espaços; para tolerar pequenas variações do modelo, admite-se também que ao menos 90\% das palavras significativas do trecho estejam no relato. Aspas e rótulos em volta da citação (``Relato do acadêmico: \ldots'') são removidos antes da comparação. Uma paráfrase, porém, é recusada: ``nega alergias'' não é aceita como evidência quando o relato diz ``não tem alergia a nada'', pois o que não é literal não pode ser conferido. Isso impede que o modelo ``cite'' algo que não foi dito;
+	\item \textbf{coerência entre valor e evidência}: em campos de texto, alguma palavra significativa do valor deve aparecer no trecho citado, desconsideradas as flexões de gênero e número (``respiratória'' e ``respiratório''), e um valor de negação (``Nega.'') exige uma negação na evidência. Isso impede, por exemplo, registrar ``Nega.'' em alergias com a evidência ``alergia a dipirona''.
+\end{enumerate}
+
+Essas verificações foram refinadas da mesma forma que o \textit{prompt}: o roteiro do Experimento~A grava a saída crua do modelo e a lista de valores descartados com o motivo, o que permitiu identificar descartes indevidos, como o de citações corretas embrulhadas em rótulos, e reavaliar as salvaguardas sem executar o modelo novamente.
+
+Os valores descartados não são gravados na ficha, mas são exibidos ao acadêmico, com o motivo, em uma lista recolhida da tela de revisão. As verificações não substituem a revisão humana: um valor apoiado em evidência verdadeira, porém mal classificado, continua a depender do acadêmico para ser rejeitado.
+
+O \textit{prompt} é versionado, e a versão fica registrada em cada sugestão. Os ajustes do \textit{prompt} foram feitos exclusivamente com relatos de desenvolvimento escritos pelos autores para casos do conjunto de ajuste (\autoref{sec:casos}), nunca com casos de teste. O \autoref{qd:versoes-prompt} resume as versões e o problema observado que motivou cada uma.
+
+\begin{quadro}[htbp]
+	\caption{Versões do \textit{prompt} de estruturação}
+	\label{qd:versoes-prompt}
+	\centering
+	\small
+	\begin{tabularx}{\textwidth}{|L{1.2cm}|Y|Y|}
+		\hline
+		\textbf{Versão} & \textbf{Problema observado} & \textbf{Alteração} \\ \hline
+		v1 & --- & Regras gerais: não diagnosticar, não deduzir, evidência literal, negações explícitas, somente códigos listados, ignorar comentários irrelevantes \\ \hline
+		v2 & O modelo marcou ``respiratória'' a partir do uso de losartana e repetiu a mesma informação em dois campos & Proibição de deduzir doenças a partir de medicamentos; cada informação em um único campo; exemplo resolvido com outro paciente \\ \hline
+		v3 & O modelo copiou o título do campo e o rótulo ``Valor:'' do guia para dentro do valor & Guia reescrito com rótulos que não se confundem com conteúdo; regra explícita de que o valor contém apenas a informação do paciente \\ \hline
+		v4 & O modelo citou o título do campo como evidência (``Tipo de escova'') ou embrulhou a citação (``Relato do acadêmico: `...' '') & Regra da evidência passa a proibir aspas, prefixos e o uso do título ou da pergunta do campo \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
 
 As salvaguardas que asseguram a ausência de finalidade diagnóstica são implementadas no código, e não apenas declaradas:
 
 \begin{itemize}
 	\item as seções de diagnóstico (Eixo~I do RDC/TMD), características relatadas e plano de tratamento são marcadas como \texttt{x-somente-humano}, não são enviadas ao modelo e têm escrita rejeitada pela API quando a origem é a IA;
-	\item a instrução ao modelo proíbe inferir, diagnosticar ou completar informações ausentes, exigindo \texttt{null} para o que não foi dito;
+	\item a instrução ao modelo proíbe inferir, diagnosticar ou completar informações ausentes, exigindo \texttt{null} para o que não foi dito, e a API recusa pedidos de sugestão para seções exclusivamente humanas e para fichas fora do estado de rascunho;
 	\item escores derivados, como a GCPS, são calculados por fórmula determinística, sem IA;
-	\item a tabela \texttt{sugestao\_ia} registra o modelo, a versão do \textit{prompt}, a saída bruta e a decisão humana sobre cada campo, permitindo auditoria e medição da taxa de aceitação.
+	\item a tabela \texttt{sugestao\_ia} registra o modelo, a versão do \textit{prompt}, a saída bruta e a decisão humana sobre cada campo (aceita, aceita e editada ou rejeitada), permitindo auditoria e medição da taxa de aceitação; a trilha de auditoria registra apenas contagens, sem o conteúdo do relato.
 \end{itemize}
 
-\todo{definir os modelos avaliados (por exemplo, dois modelos de 3 a 8 bilhões de parâmetros das famílias Llama, Qwen ou Gemma) e registrar as versões exatas.}
+O modelo de referência do desenvolvimento é o Qwen2.5 de 3 bilhões de parâmetros (\texttt{qwen2.5:3b}, quantização Q4\_K\_M) executado pelo Ollama 0.34.3, com temperatura zero, semente fixa e janela de contexto de 8.192 \textit{tokens}. A transcrição usa o modelo \texttt{small} do faster-whisper 1.2.1 em CPU, com quantização \texttt{int8}. \todo{definir o segundo modelo avaliado no Experimento~A (por exemplo, \texttt{qwen2.5:7b} ou \texttt{llama3.1:8b}) e registrar a versão exata.}
 
 \section{Módulo analítico}
 \label{sec:metodo-analitico}
@@ -329,13 +361,13 @@ Os casos foram divididos, por sorteio, em um conjunto de ajuste (10 casos), usad
 \subsection{Experimento A: qualidade da estruturação automática}
 \label{sec:exp-ia}
 
-Os casos de teste são processados por \todo{dois ou três} modelos de linguagem, cada um em duas estratégias (ficha inteira e extração por seção). Cada campo extraído é comparado ao gabarito. Para campos categóricos e booleanos, contam-se os verdadeiros positivos ($VP$), os falsos positivos ($FP$) e os falsos negativos ($FN$), e calculam-se
+Os casos de teste são processados por \todo{dois ou três} modelos de linguagem, cada um em duas estratégias (ficha inteira e extração por seção), restritas às seções que admitem ditado: queixa principal, história médica, história odontológica, prótese e observações. Cada campo extraído é comparado ao gabarito e classificado como verdadeiro positivo ($VP$, valor correto), falso positivo ($FP$, valor em campo vazio no gabarito), falso negativo ($FN$, campo com valor deixado vazio), verdadeiro negativo ou erro de valor ($EV$, campo preenchido com valor diferente do gabarito). Como é usual em extração de informação, o erro de valor conta simultaneamente como falso positivo e falso negativo:
 
 \begin{equation}
-	P = \frac{VP}{VP+FP}, \qquad R = \frac{VP}{VP+FN}, \qquad F_1 = \frac{2PR}{P+R}.
+	P = \frac{VP}{VP+FP+EV}, \qquad R = \frac{VP}{VP+FN+EV}, \qquad F_1 = \frac{2PR}{P+R}.
 \end{equation}
 
-Para campos numéricos, calculam-se a taxa de acerto exato e o erro absoluto médio. Campos de texto livre são avaliados por dois avaliadores em escala de 0 (inadequado) a 2 (adequado). Além disso, medem-se:
+Campos categóricos, booleanos e numéricos são comparados por igualdade exata; listas, como conjuntos. Campos de texto livre recebem uma medida automática aproximada, o $F_1$ entre os conjuntos de palavras do valor extraído e do gabarito, sendo considerados corretos a partir de 0,5; a medida definitiva, porém, é a avaliação por dois avaliadores em escala de 0 (inadequado) a 2 (adequado), a partir de uma planilha gerada automaticamente com os pares gabarito--valor extraído. A medida automática penaliza paráfrases corretas (``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''), razão pela qual o $F_1$ é informado também separadamente para os campos fechados, de comparação exata, e para os campos de texto. Todas as métricas são calculadas em dois momentos: sobre a saída \emph{bruta} do modelo e sobre a saída \emph{após as salvaguardas}, o que permite quantificar o efeito das verificações determinísticas. O experimento é executado por um \textit{script} que grava cada execução assim que termina, de modo que uma interrupção não perde as execuções concluídas. Além disso, medem-se:
 
 \begin{itemize}
 	\item \textbf{taxa de alucinação}: proporção de campos preenchidos pelo modelo cujo valor no gabarito é nulo;

@@ -85,13 +85,19 @@ As seções de decisão clínica são identificadas na navegação e no cabeçal
 	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
+Nas seções que admitem ditado, a ficha exibe o painel ``Ditado com IA'' (\autoref{fig:tela-revisao-ia}). O acadêmico grava o relato, que é transcrito e pode ser corrigido antes do envio, ou digita o texto diretamente. As sugestões aparecem com o rótulo do campo, o valor proposto e, entre aspas, o trecho do relato que o justifica. Cada sugestão pode ser aceita ou rejeitada; ao aceitar, o valor é aplicado ao formulário, onde pode ser corrigido, e a decisão passa a constar como ``aceita e editada''. Quando a sugestão substituiria um valor já preenchido, o painel avisa e mostra o valor atual. Os valores descartados pelas salvaguardas ficam em uma lista recolhida, com o motivo do descarte. O painel não aparece nas seções exclusivamente humanas nem em fichas enviadas para revisão ou aprovadas.
+
 \begin{figure}[htbp]
 	\caption{Revisão das sugestões da IA com o trecho de evidência}
 	\label{fig:tela-revisao-ia}
 	\centering
-	\figtodo{captura da tela de revisão (aceitar, editar, rejeitar), após a fase 4}
-	\fonte{Os autores (2026).}
+	\includegraphics[width=0.85\textwidth]{figuras/11-revisao-ia}
+	\fonte{Os autores (2026), com relato sintético e o modelo \texttt{qwen2.5:3b} (\textit{prompt} v4).}
 \end{figure}
+
+A \autoref{fig:tela-revisao-ia} foi gerada por um teste automatizado de ponta a ponta que executa o modelo real sobre um relato de desenvolvimento. O relato contém, de propósito, um comentário sem relação com a saúde (``a filha passou no vestibular''). O modelo o atribuiu ao campo ``vida pessoal'', com a citação correta, de modo que as salvaguardas não tinham como barrá-lo. O acadêmico o rejeitou na revisão, o que ilustra por que a revisão humana é obrigatória.
+
+A latência é o principal limite do módulo no ambiente de desenvolvimento, um computador pessoal sem GPU: com o \texttt{qwen2.5:3b}, a estruturação de uma seção isolada pela interface levou de 35 a 104~s, e a das cinco seções que admitem ditado, de 1,3 a 3,8~minutos por relato de desenvolvimento, a uma taxa de cerca de 8~\textit{tokens} por segundo. A transcrição de 14,5~s de áudio pelo Whisper \texttt{small} levou 5,7~s, depois do carregamento inicial do modelo. \todo{medir a latência no servidor da UEPG, com e sem GPU.}
 
 \begin{figure}[htbp]
 	\caption{Painel de evolução clínica do paciente}
@@ -119,7 +125,7 @@ As seções de decisão clínica são identificadas na navegação e no cabeçal
 	\fonte{Os autores (2026).}
 \end{table}
 
-Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 98 testes da versão atual.
+Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 142 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, o que torna os testes rápidos e determinísticos; um teste adicional, executado sob demanda, percorre o fluxo de ditado no navegador com o modelo real.
 
 \begin{table}[htbp]
 	\caption{Testes automatizados por componente}
@@ -129,16 +135,19 @@ Os requisitos de segurança e de integridade são verificados por testes automat
 	\begin{tabularx}{\textwidth}{|L{3.8cm}|Y|c|}
 		\hline
 		\textbf{Componente} & \textbf{O que é verificado} & \textbf{Testes} \\ \hline
-		Esquema da ficha & Validade, cobertura das questões 1 a 75, esquema derivado para a IA, rótulos, campos condicionais, completude & 30 \\ \hline
+		Esquema da ficha & Validade, cobertura das questões 1 a 75, esquema derivado para a IA, rótulos, campos condicionais, completude e salvaguardas da IA (evidência presente no relato, coerência entre valor e evidência, limpeza da citação) & 40 \\ \hline
 		API: autenticação & Argon2id, \textit{cookie}, bloqueio, sessão, auditoria de acesso & 9 \\ \hline
 		API: controle de acesso & Matriz de papéis na API e \textit{Row-Level Security} diretamente no banco & 10 \\ \hline
 		API: pacientes & Cifragem dos dados pessoais, busca por CPF via HMAC, validação, auditoria & 6 \\ \hline
 		API: fichas & Fluxo de revisão, imutabilidade, adendos, colunas geradas, odontograma & 7 \\ \hline
 		API: esquema analítico & Isolamento do papel analítico, pseudônimos, ausência de textos livres & 5 \\ \hline
-		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma & 18 \\ \hline
+		API: sugestões da IA & Recusa de seções exclusivamente humanas e de fichas fora do rascunho, registro das sugestões e das decisões, falha do modelo, auditoria sem conteúdo & 7 \\ \hline
+		Módulo de IA & Montagem do \textit{prompt}, formato de saída, descarte pelas salvaguardas (com modelo simulado), métricas e retomada do Experimento~A, distinção entre falha de conexão e saída inválida & 14 \\ \hline
+		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\ \hline
+		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma e painel de ditado (aceitar, rejeitar, aceitar todas, edição posterior) & 24 \\ \hline
 		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, persistência, revisão, aprovação) e restrição de telas por papel & 2 \\ \hline
-		Gerador de casos sintéticos & Validade, reprodutibilidade e coerência clínica & 11 \\ \hline
-		\textbf{Total} & & \textbf{98} \\ \hline
+		Gerador de casos sintéticos & Validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo & 12 \\ \hline
+		\textbf{Total} & & \textbf{142} \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
 \end{table}

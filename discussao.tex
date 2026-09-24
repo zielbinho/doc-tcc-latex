@@ -9,7 +9,9 @@
 
 \section{IA sem finalidade diagnóstica}
 
-\todo{discutir a taxa de alucinação e a de aceitação das sugestões, o papel do trecho de evidência e a eficácia das salvaguardas.}
+Já no desenvolvimento, as salvaguardas mostraram um compromisso que o Experimento~A deve quantificar. Ao exigir que o trecho de evidência conste literalmente do relato, elas eliminam valores sem base, mas também descartam valores corretos cuja evidência o modelo parafraseou (``nega alergias'' para ``não tem alergia a nada'') ou substituiu pelo título do campo. Ou seja, trocam revocação por precisão. Essa escolha é deliberada: em um prontuário, uma sugestão ausente custa ao acadêmico alguns segundos de digitação, enquanto uma sugestão errada e aceita por descuido compromete o registro clínico. As salvaguardas também não são suficientes sozinhas: um comentário irrelevante do paciente, citado corretamente, ainda pode ser atribuído a um campo, e só a revisão humana o identifica.
+
+\todo{discutir a taxa de alucinação e a de aceitação das sugestões com os resultados do Experimento~A e do Experimento~C.}
 
 \section{Áudio ou formulário}
 
@@ -25,6 +27,7 @@
 	\item \textbf{Validade legal}: sem assinatura digital com certificação ICP-Brasil, o sistema não substitui o prontuário em papel \cite{cfo91-2009}.
 	\item \textbf{Interoperabilidade}: o sistema não troca dados com outros sistemas de saúde, como a Rede Nacional de Dados em Saúde, nem adota padrões como o HL7 FHIR.
 	\item \textbf{Escalabilidade}: a implantação prevê um único servidor, adequado ao volume da Liga, mas não a uma clínica-escola inteira sem ajustes de infraestrutura.
-	\item \textbf{Desempenho da IA}: sem GPU, o tempo de resposta dos modelos locais pode ser elevado; modelos menores são mais rápidos, porém menos precisos.
+	\item \textbf{Desempenho da IA}: sem GPU, o tempo de resposta dos modelos locais pode ser elevado; modelos menores são mais rápidos, porém menos precisos. Com o modelo de 3 bilhões de parâmetros em CPU, a estruturação das cinco seções que admitem ditado levou de 1,3 a 3,8~minutos por relato de desenvolvimento.
+	\item \textbf{Ajuste do \textit{prompt}}: o \textit{prompt} e as salvaguardas foram ajustados com poucos relatos de desenvolvimento, e diferenças pequenas entre versões ficaram dentro da variação esperada. As decisões basearam-se na análise qualitativa dos erros, e o desempenho em relatos reais pode ser diferente.
 	\item \textbf{Vieses dos modelos}: modelos de fala e de linguagem podem ter desempenho inferior com sotaques regionais, fala espontânea e vocabulário muito específico.
 \end{itemize}
