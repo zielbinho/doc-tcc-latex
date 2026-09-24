@@ -28,6 +28,7 @@ A \autoref{tb:campos-captacao} resume os campos por forma de captação. Os 15 c
 A partir desse esquema, foi construído o modelo de dados híbrido da \autoref{fig:der}, que prioriza campos numéricos e categóricos estruturados para viabilizar o acoplamento das ferramentas de análise em Python e Pandas.
 
 \section{Sistema desenvolvido}
+\label{sec:res-sistema}
 
 A interface foi implementada em React e consome exclusivamente a API. As telas foram capturadas automaticamente por um roteiro do Playwright executado sobre o ambiente de desenvolvimento com dados sintéticos, o que torna as figuras reprodutíveis a cada versão do sistema.
 
@@ -97,7 +98,7 @@ Nas seções que admitem ditado, a ficha exibe o painel ``Ditado com IA'' (\auto
 
 A \autoref{fig:tela-revisao-ia} foi gerada por um teste automatizado de ponta a ponta que executa o modelo real sobre um relato de desenvolvimento. O relato contém, de propósito, um comentário sem relação com a saúde (``a filha passou no vestibular''). O modelo o atribuiu ao campo ``vida pessoal'', com a citação correta, de modo que as salvaguardas não tinham como barrá-lo. O acadêmico o rejeitou na revisão, o que ilustra por que a revisão humana é obrigatória.
 
-A latência é o principal limite do módulo no ambiente de desenvolvimento, um computador pessoal sem GPU: com o \texttt{qwen2.5:3b}, a estruturação de uma seção isolada pela interface levou de 35 a 104~s, e a das cinco seções que admitem ditado, de 1,3 a 3,8~minutos por relato de desenvolvimento, a uma taxa de cerca de 8~\textit{tokens} por segundo. A transcrição de 14,5~s de áudio pelo Whisper \texttt{small} levou 5,7~s, depois do carregamento inicial do modelo. \todo{medir a latência no servidor da UEPG, com e sem GPU.}
+A latência é o principal limite do módulo no ambiente de desenvolvimento, um computador pessoal sem GPU: com o \texttt{qwen2.5:3b}, a estruturação de uma seção isolada pela interface levou de 35 a 104~s, e a das cinco seções que admitem ditado, de 1,3 a 3,8~minutos por relato de desenvolvimento, a uma taxa de cerca de 8~\textit{tokens} por segundo. A transcrição de 14,5~s de áudio pelo Whisper \texttt{small} levou 5,7~s, depois do carregamento inicial do modelo. A medição no servidor da instituição, onde uma GPU reduziria esses tempos, fica para a implantação.
 
 A tela do paciente passou a exibir a evolução clínica calculada a partir das fichas aprovadas (\autoref{fig:tela-painel}): a variação da intensidade característica da dor, da abertura bucal e do número de sítios dolorosos entre a primeira e a última consulta, os gráficos dessas medidas ao longo do tempo, com o período de tratamento sombreado, a tabela dos indicadores por consulta, incluindo o grau da GCPS, e o mapa de palpação da consulta escolhida. Cada medida tem o seu próprio gráfico, para que escalas diferentes (0 a 100 e milímetros) não dividam um mesmo eixo. Professores e pesquisadores têm ainda o painel da coorte, apresentado na \autoref{sec:res-exp-d}, e professores, pesquisadores e administradores, o painel de qualidade dos dados, com a completude das fichas e a taxa de aceitação das sugestões da IA por seção e por versão do \textit{prompt}.
 
@@ -120,14 +121,19 @@ A tela do paciente passou a exibir a evolução clínica calculada a partir das 
 		\hline
 		\multirow{2}{*}{\textbf{Métrica}} & \multicolumn{2}{c|}{\textbf{1.000 pacientes}} & \multicolumn{2}{c|}{\textbf{10.000 pacientes}} \\ \cline{2-5}
 		& \textbf{JSONB} & \textbf{Normalizado} & \textbf{JSONB} & \textbf{Normalizado} \\ \hline
-		Leitura do prontuário (ms) & -- & -- & -- & -- \\ \hline
-		Escrita de um atendimento (ms) & -- & -- & -- & -- \\ \hline
-		Espaço em disco (MB) & -- & -- & -- & -- \\ \hline
+		Leitura do prontuário (ms) & 0,15 (0,35) & 0,58 (1,18) & 0,28 (0,79) & 0,87 (1,78) \\ \hline
+		Gravação de um atendimento (ms) & 8,8 (14,2) & 16,0 (22,3) & 10,9 (16,3) & 18,4 (26,0) \\ \hline
+		Consulta analítica (ms) & 29,0 & 8,6 & 254,0 & 151,5 \\ \hline
+		Espaço em disco (MB) & 8,8 & 15,6 & 72,6 & 131,0 \\ \hline
 	\end{tabular}
-	\fonte{Os autores (2026).}
+	\fonte{Os autores (2026). Leitura e gravação: mediana de 300 repetições, com o percentil 95 entre parênteses; consulta analítica: mediana de 10 execuções.}
 \end{table}
 
-Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 205 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, o que torna os testes rápidos e determinísticos; um teste adicional, executado sob demanda, percorre o fluxo de ditado no navegador com o modelo real.
+A \autoref{tb:benchmark} mostra que o modelo híbrido foi mais rápido nas operações do uso clínico. A leitura do prontuário completo de um paciente levou de três a quatro vezes menos tempo, porque o odontograma e a palpação vêm prontos em um único documento, enquanto o modelo normalizado precisa reagrupar dezenas de linhas por atendimento. A gravação de um atendimento levou de 40\% a 45\% menos tempo, pois são três inserções contra dezenas de linhas no modelo normalizado. O espaço em disco também foi quase a metade. Nos dois tamanhos de base, todas as leituras e gravações ficaram muito abaixo de um décimo de segundo, de modo que nenhum dos modelos seria percebido como lento pelo usuário.
+
+O modelo normalizado foi mais rápido apenas na consulta analítica sobre todas as fichas: 1,7 vez com 10.000 pacientes (0,15~s contra 0,25~s), porque percorre uma tabela estreita, enquanto o híbrido precisa abrir cada documento. Essa diferença pesa pouco no sistema: as análises de coorte são feitas pelo serviço analítico sobre o esquema pseudonimizado, fora do caminho das telas clínicas, e, se uma consulta desse tipo se tornar frequente, um índice sobre a expressão \texttt{JSONB} pode acelerá-la sem mudar o modelo. O resultado sustenta a escolha do modelo híbrido (\autoref{sec:modelagem}), com a ressalva de que a medição foi feita em um único computador e com dados sintéticos.
+
+Os requisitos de segurança e de integridade são verificados por testes automatizados. Os testes da API são de integração: cada execução cria um servidor PostgreSQL~17 descartável, aplica as migrações e exercita a API por requisições HTTP, verificando também o estado do banco diretamente. Os testes da interface usam a Testing Library para os componentes e o Playwright, com o navegador Microsoft Edge, para os fluxos de ponta a ponta. A \autoref{tb:testes} resume os 249 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, o que torna os testes rápidos e determinísticos; um teste adicional, executado sob demanda, percorre o fluxo de ditado no navegador com o modelo real.
 
 \begin{table}[htbp]
 	\caption{Testes automatizados por componente}
@@ -137,87 +143,159 @@ Os requisitos de segurança e de integridade são verificados por testes automat
 	\begin{tabularx}{\textwidth}{|L{3.8cm}|Y|c|}
 		\hline
 		\textbf{Componente} & \textbf{O que é verificado} & \textbf{Testes} \\ \hline
-		Esquema da ficha & Validade, cobertura das questões 1 a 75, esquema derivado para a IA, rótulos, campos condicionais, completude e salvaguardas da IA (evidência presente no relato, coerência entre valor e evidência, limpeza da citação) & 40 \\ \hline
+		Esquema da ficha & Validade, cobertura das questões 1 a 75, esquema derivado para a IA, rótulos, campos condicionais, completude, salvaguardas da IA (evidência presente no relato, coerência entre valor e evidência, limpeza da citação) e validadores pré-compilados (atualizados, sem avaliação de código em tempo de execução e equivalentes aos gerados na hora) & 44 \\ \hline
 		API: autenticação & Argon2id, \textit{cookie}, bloqueio, sessão, auditoria de acesso & 9 \\ \hline
 		API: controle de acesso & Matriz de papéis na API e \textit{Row-Level Security} diretamente no banco & 10 \\ \hline
 		API: pacientes & Cifragem dos dados pessoais, busca por CPF via HMAC, validação, auditoria & 6 \\ \hline
 		API: fichas & Fluxo de revisão, imutabilidade, adendos, colunas geradas, odontograma & 7 \\ \hline
 		API: esquema analítico & Isolamento do papel analítico, pseudônimos, ausência de textos livres, tempo desde a última consulta, decisões da IA sem conteúdo & 8 \\ \hline
-		API: painéis analíticos & Papéis com acesso a cada painel, RLS na evolução do paciente, envio ao serviço analítico só das seções usadas nos indicadores, auditoria & 8 \\ \hline
+		API: painéis analíticos & Papéis com acesso a cada painel e à exportação, RLS na evolução do paciente, envio ao serviço analítico só das seções usadas nos indicadores, arquivo CSV da exportação, auditoria & 9 \\ \hline
 		API: sugestões da IA & Recusa de seções exclusivamente humanas e de fichas fora do rascunho, registro das sugestões e das decisões, falha do modelo, auditoria sem conteúdo & 7 \\ \hline
+		API: segurança & Todas as rotas de dados recusam requisições sem sessão ou com sessão forjada (401), injeção de SQL na busca e no login, HTML devolvido como dado JSON, identificador de outro aluno respondido como inexistente (404), identificador malformado sem detalhes do banco, limite de tamanho do corpo, cabeçalhos contra cache e identificação do servidor & 37 \\ \hline
 		Módulo de IA & Montagem do \textit{prompt}, formato de saída, descarte pelas salvaguardas (com modelo simulado), métricas e retomada do Experimento~A, distinção entre falha de conexão e saída inválida & 14 \\ \hline
 		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\ \hline
-		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, aceitar todas, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\ \hline
-		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, serviço (\textit{endpoints}) & 37 \\ \hline
+		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, ausência de aceite em lote, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\ \hline
+		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, serviço (\textit{endpoints}) & 38 \\ \hline
 		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, persistência, revisão, aprovação) e restrição de telas por papel & 2 \\ \hline
-		Geradores de dados sintéticos & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 23 \\ \hline
-		\textbf{Total} & & \textbf{205} \\ \hline
+		Geradores de dados sintéticos & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 24 \\ \hline
+		\textbf{Total} & & \textbf{249} \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
 \end{table}
 
 Entre as propriedades verificadas estão as seguintes. Um aluno não obtém, nem pela API nem por consulta direta com o papel da aplicação, os pacientes de outro aluno. O administrador não enxerga pacientes, embora consulte a auditoria. Nem o dono das tabelas consegue alterar ou excluir uma ficha aprovada. O texto original do CPF, do telefone e do endereço não aparece no valor gravado. O papel analítico não tem acesso às tabelas identificadas nem ao segredo dos pseudônimos, e as visões analíticas não contêm o nome do paciente nem trechos de texto livre.
 
-\todo{resultado da varredura OWASP ZAP (alertas por severidade, antes e depois) e cobertura de testes.}
+A revisão de segurança encontrou e corrigiu dois defeitos reais. O primeiro só aparecia com a política de segurança de conteúdo da implantação, que proíbe a execução de código gerado em tempo de execução (\texttt{script-src 'self'}): a biblioteca de validação compila os esquemas JSON em funções no próprio navegador, o que a política bloqueia, e a versão compilada da interface abria em branco. Os validadores passaram a ser gerados antes da compilação, como módulos comuns, e um teste garante que continuam atualizados e equivalentes aos gerados na hora. O fluxo completo da ficha passou a ser testado também sobre a versão compilada, servida com os mesmos cabeçalhos da implantação, e o teste falha diante de qualquer violação da política. O segundo defeito estava na ordem das verificações da API: uma requisição sem sessão com corpo inválido recebia a resposta de erro de validação (400) antes da de falta de autenticação (401), o que revelava a estrutura esperada pelas rotas a quem não estava autenticado. A verificação de sessão e de papel foi antecipada para antes da validação do corpo.
+
+Os demais testes de ataque passaram sem alterações no código: a busca de pacientes e o login tratam tentativas de injeção de SQL como texto comum, um aluno não distingue um paciente inexistente de um paciente de outro aluno, e as mensagens de erro não expõem detalhes do banco. O proxy da implantação envia os cabeçalhos de segurança HSTS (Strict-Transport-Security), CSP (Content-Security-Policy), X-Frame-Options, X-Content-Type-Options, Referrer-Policy e Permissions-Policy, este último liberando apenas o microfone, usado no ditado. A auditoria das dependências não encontrou vulnerabilidades conhecidas nos pacotes JavaScript; nos pacotes Python, apontou apenas versões antigas do \texttt{pip} e do \texttt{setuptools} no ambiente de desenvolvimento, que foram atualizadas, também nas imagens de contêiner. A varredura dinâmica com o OWASP ZAP, que depende do sistema implantado no servidor da instituição, não foi realizada.
 
 \section{Experimento A: qualidade da estruturação automática}
+\label{sec:res-exp-a}
+
+Os 30 casos de teste foram processados pelo \texttt{qwen2.5:3b}, com o \textit{prompt} na versão~4, nas duas estratégias, o que resultou em 780 campos comparados por estratégia (26 campos das seções que admitem ditado em cada caso). Todas as 60 respostas do modelo respeitaram o esquema: a validade estrutural foi de 100\%, efeito da saída restrita ao esquema JSON. A \autoref{tb:exp-a} resume as métricas.
 
 \begin{table}[htbp]
 	\caption{Desempenho da estruturação automática no conjunto de teste}
 	\label{tb:exp-a}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|l|c|c|c|c|c|c|}
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{|l|l|c|c|c|c|c|c|c|}
 		\hline
-		\textbf{Modelo} & \textbf{Estratégia} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{Alucinação} & \textbf{Omissão} & \textbf{Latência (s)} \\ \hline
-		Modelo 1 & Ficha inteira & -- & -- & -- & -- & -- & -- \\ \hline
-		Modelo 1 & Por seção & -- & -- & -- & -- & -- & -- \\ \hline
-		Modelo 2 & Ficha inteira & -- & -- & -- & -- & -- & -- \\ \hline
-		Modelo 2 & Por seção & -- & -- & -- & -- & -- & -- \\ \hline
+		\textbf{Estratégia} & \textbf{Saída} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{F1 fechados} & \textbf{F1 texto} & \textbf{Alucinação} & \textbf{Omissão} \\ \hline
+		Por seção & Bruta & 0,56 & 0,61 & 0,58 & 0,74 & 0,46 & 0,69 & 0,09 \\ \hline
+		Por seção & Salvaguardas & 0,58 & 0,51 & 0,54 & 0,69 & 0,42 & 0,53 & 0,26 \\ \hline
+		Ficha inteira & Bruta & 0,63 & 0,55 & 0,59 & 0,70 & 0,50 & 0,32 & 0,20 \\ \hline
+		Ficha inteira & Salvaguardas & 0,65 & 0,47 & 0,55 & 0,63 & 0,48 & 0,25 & 0,34 \\ \hline
 	\end{tabular}
-	\fonte{Os autores (2026).}
+	\fonte{Os autores (2026), com o modelo \texttt{qwen2.5:3b}. F1 texto: medida automática aproximada (sobreposição de palavras).}
 \end{table}
 
-\todo{F1 por seção da ficha (gráfico), validade estrutural, reprodutibilidade e análise qualitativa dos erros por categoria: negação, tempo, autocorreção, termos coloquiais.}
+As duas estratégias chegaram a F1 geral semelhante (0,58 e 0,59 na saída bruta), mas com perfis de erro opostos. Na extração por seção, o modelo recebe um trecho menor do esquema e tende a preencher tudo o que lhe é apresentado: acerta mais campos fechados (F1 de 0,74), mas preencheu 69\% dos campos que deveriam ficar vazios. Na ficha inteira, a alucinação caiu para 32\%, à custa de mais omissões. A ficha inteira também foi mais rápida, porque o relato é enviado uma única vez: a mediana foi de 132~s por caso, contra 175~s por seção, a cerca de 8 \textit{tokens} por segundo. Essas latências foram medidas no computador de desenvolvimento, sem GPU e sem dedicação exclusiva ao experimento, e servem apenas como ordem de grandeza. Como a alucinação é o erro mais perigoso em um prontuário, a ficha inteira é a estratégia mais adequada ao sistema.
+
+As salvaguardas funcionaram na direção esperada: reduziram a alucinação (de 0,69 para 0,53 por seção e de 0,32 para 0,25 na ficha inteira) e elevaram a precisão, com queda de cerca de 0,04 no F1. Elas não são, porém, precisas. Na ficha inteira, dos 93 valores descartados, 51 estavam corretos: o motivo mais frequente de descarte foi a evidência não encontrada literalmente no relato, que ocorre também quando o modelo reescreve a citação. As salvaguardas trocam, portanto, erros graves (valores inventados) por omissões, que o acadêmico preenche na revisão. A revisão humana continua indispensável: mesmo com as salvaguardas, 25\% dos campos que deveriam ficar vazios receberam algum valor.
+
+O desempenho variou entre as seções. Com a ficha inteira e as salvaguardas, o F1 foi de 0,69 na história odontológica, formada principalmente por campos fechados, de 0,51 na história médica, de 0,50 na queixa principal, de 0,46 na prótese e de apenas 0,22 nas observações. Os campos fechados chegaram a F1 de 0,63 e os de texto livre a 0,48; nestes, a medida automática subestima o acerto, porque penaliza paráfrases corretas, como ``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''.
+
+A análise dos erros da saída bruta na ficha inteira revela quatro padrões:
+
+\begin{itemize}
+	\item \textbf{enumeração das opções}: nos campos de múltipla escolha, como os acessórios de higiene e os tratamentos prévios, o modelo repetiu opções da lista do esquema que o relato não mencionava (por exemplo, ``fio dental, palito, passador de fio'' quando o paciente citou apenas o bochecho);
+	\item \textbf{inversão de polaridade}: em perguntas de sim ou não, a negação de uma oração contaminou a vizinha. Em quatro casos, o relato afirmava a respiração bucal e em seguida negava a boca seca, como em ``Respira pela boca, mas não sente a boca seca'', e o modelo marcou ``não'' também para a respiração bucal; no caso inverso, ``Não respira pela boca, mas sente a boca seca'', marcou ``não'' para a boca seca. Em três casos, o modelo registrou que o paciente não usa medicamentos, embora o relato dissesse, por exemplo, ``Toma sinvastatina 20 mg'';
+	\item \textbf{confusão de termos}: em cinco casos, a prótese parcial removível foi registrada como prótese total; em quatro deles, o relato também usava os termos coloquiais ``ponte móvel'' ou ``dentadura'';
+	\item \textbf{campos genéricos}: o campo de observações foi preenchido indevidamente em 18 dos 30 casos, e o campo de outras condições da história médica em 15, muitas vezes repetindo o que já estava registrado em outro campo, como uma condição gastrointestinal já marcada na lista de sistemas.
+\end{itemize}
+
+Por desafio de linguagem, o F1 com as salvaguardas foi menor nos casos com autocorreção (0,43, em 5 casos), expressões temporais imprecisas (0,49, em 7) e termos coloquiais (0,53, em 11), e maior nos casos com ordem trocada (0,55, em 12), negação (0,57, em 12) e informação irrelevante (0,58, em 10). Os grupos são pequenos e se sobrepõem, pois cada caso tem de um a três desafios, de modo que as diferenças são apenas indicativas. Ainda assim, a autocorreção, em que o paciente corrige o que acabou de dizer, foi o desafio mais difícil para o modelo pequeno.
 
 \section{Experimento B: captação por áudio versus texto}
 
+As 30 narrativas de teste resultaram em áudios de 56 a 89~s, com mediana de 72~s, a um ritmo de cerca de 100 palavras por minuto. A \autoref{tb:exp-b} resume a qualidade da transcrição pelo Whisper \texttt{small}.
+
 \begin{table}[htbp]
-	\caption{Taxa de erro de palavras e impacto na estruturação}
+	\caption{Taxa de erro de palavras na transcrição das narrativas de teste}
 	\label{tb:exp-b}
-	\footnotesize
-	\centering
-	\begin{tabular}{|l|l|c|c|c|}
-		\hline
-		\textbf{Modelo Whisper} & \textbf{Condição} & \textbf{WER geral} & \textbf{WER termos clínicos} & \textbf{$\Delta F_1$ vs. texto} \\ \hline
-		\textit{small} & Silêncio & -- & -- & -- \\ \hline
-		\textit{small} & Ruído & -- & -- & -- \\ \hline
-		\textit{medium} & Silêncio & -- & -- & -- \\ \hline
-		\textit{medium} & Ruído & -- & -- & -- \\ \hline
-	\end{tabular}
-	\fonte{Os autores (2026).}
-\end{table}
-
-\section{Experimento C: usabilidade e eficiência}
-
-\todo{caracterização dos participantes (número, período do curso, experiência com a ficha).}
-
-\begin{table}[htbp]
-	\caption{Resultados por condição de registro}
-	\label{tb:exp-c}
 	\footnotesize
 	\centering
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline
-		\textbf{Condição} & \textbf{Tempo (min)} & \textbf{Completude (\%)} & \textbf{Erros} & \textbf{NASA-TLX} \\ \hline
-		Papel & -- & -- & -- & -- \\ \hline
-		Formulário digital & -- & -- & -- & -- \\ \hline
-		Formulário com ditado e IA & -- & -- & -- & -- \\ \hline
+		\textbf{Condição} & \textbf{WER média} & \textbf{WER mediana} & \textbf{Pior caso} & \textbf{Fator de tempo real} \\ \hline
+		Silêncio & 4,0\% & 3,6\% & 9,0\% & 0,46 \\ \hline
+		Ruído rosa a 10~dB & 6,2\% & 5,8\% & 14,0\% & 0,65 \\ \hline
 	\end{tabular}
-	\fonte{Os autores (2026).}
+	\fonte{Os autores (2026), com o Whisper \texttt{small} em CPU (\texttt{int8}) e voz sintética; 30 narrativas por condição.}
 \end{table}
 
-\todo{escore SUS médio e intervalo de confiança; resultado do teste de Friedman; taxa de aceitação das sugestões; problemas de usabilidade por severidade; síntese das entrevistas.}
+A transcrição foi boa nas duas condições: cerca de uma palavra errada a cada 25 no silêncio e a cada 16 com ruído. Os erros, porém, concentraram-se justamente nos termos que importam para a ficha. No relato do caso~1, por exemplo, ``mau hálito'' virou ``mal-álito'', ``apendicite'' virou ``appendicity'' e ``ibuprofeno'' virou ``ibuprofenu'', enquanto o restante do texto teve apenas erros menores, como um artigo a mais. O vocabulário clínico inicial ajuda, mas não cobre todos os termos da anamnese. A transcrição levou menos tempo que a duração do áudio: cerca de 0,5 segundo por segundo de fala no silêncio e 0,65 com ruído, medidos com o modelo de linguagem em execução ao mesmo tempo na máquina.
+
+Nos 10 casos em que as transcrições da condição silenciosa passaram pela estruturação, o $F_1$ da saída bruta caiu de 0,59, com o texto original, para 0,56, com o áudio transcrito. Com as salvaguardas, a queda foi maior, de 0,56 para 0,47, e a omissão subiu de 33\% para 45\%. A razão é que a verificação literal da evidência é sensível aos erros de transcrição e às pequenas variações que eles provocam na resposta do modelo: os descartes por evidência não encontrada no relato passaram de 7, com o texto, para 15, com o áudio. Os números devem ser lidos com cautela, pois a amostra é pequena, e um mesmo caso pode variar bastante com pequenas mudanças no texto de entrada: no caso~1, a transcrição praticamente idêntica ao original levou a um resultado bem pior. Ainda assim, indicam que o áudio acrescenta uma perda moderada, que recai principalmente sobre as salvaguardas.
+
+\section{Experimento C: usabilidade e eficiência}
+
+\subsection{Acessibilidade}
+
+Na primeira execução, a auditoria automática apontou três violações de gravidade séria, todas de estrutura e independentes do tema. Na tela do paciente, o endereço, nos dados pessoais, estava envolvido por um elemento a mais, o que quebrava a estrutura da lista de definições (regras \texttt{definition-list} e \texttt{dlitem}); como a evolução clínica é exibida na mesma tela, a violação aparecia também ali. No mapa de palpação, o desenho estava marcado como imagem, embora contivesse botões, o que os esconde das tecnologias assistivas (regra \texttt{nested-interactive}). Corrigidos os três pontos, a segunda execução não encontrou nenhuma violação, de qualquer gravidade, nas 20 auditorias (10 telas nos dois temas), incluindo o contraste de cores do tema escuro. A auditoria passou a fazer parte dos testes de ponta a ponta, de modo que uma regressão é detectada antes de chegar aos usuários.
+
+\subsection{Tempo estimado pelo KLM}
+
+A \autoref{tb:klm} apresenta a estimativa do tempo de preenchimento da ficha inicial pelo formulário, com os valores da ficha de exemplo. Os 120 campos preenchidos exigiriam cerca de 9,7~minutos de um usuário experiente, sem contar o cadastro do paciente e o odontograma. O texto livre concentra o tempo: as seis seções em que ele predomina (queixa principal, história médica, condição DTM, tecidos moles, condição periodontal e plano de tratamento) somam 251~s, ou 43\% do total, com apenas 18 dos 120 campos. Nas seções de respostas fechadas, cada campo custa cerca de 3~s, o que confirma a escolha do formulário para o questionário de dor e o exame clínico (\autoref{qua:ficha-captacao}).
+
+\begin{table}[htbp]
+	\caption{Tempo estimado pelo KLM para preencher a ficha inicial pelo formulário}
+	\label{tb:klm}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|}
+		\hline
+		\textbf{Seção} & \textbf{Campos preenchidos} & \textbf{Tempo (s)} \\ \hline
+		Queixa principal & 1 & 30,9 \\ \hline
+		História médica & 10 & 108,1 \\ \hline
+		História odontológica e hábitos & 7 & 23,2 \\ \hline
+		Questionário de dor e DTM & 23 & 70,4 \\ \hline
+		Condição DTM & 1 & 30,1 \\ \hline
+		Exame clínico de DTM (com a palpação) & 33 & 100,4 \\ \hline
+		Prótese & 1 & 5,5 \\ \hline
+		RDC/TMD: características relatadas & 7 & 21,8 \\ \hline
+		RDC/TMD Eixo I: diagnóstico & 5 & 16,4 \\ \hline
+		Exame extraoral & 12 & 43,6 \\ \hline
+		Exame intraoral & 14 & 47,0 \\ \hline
+		Variações de normalidade dos tecidos moles & 3 & 26,2 \\ \hline
+		Condição periodontal & 1 & 20,0 \\ \hline
+		Plano de tratamento & 2 & 35,9 \\ \hline
+		\textbf{Total} & \textbf{120} & \textbf{579,5 (9,7 min)} \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026). Inclui a troca de seção na navegação lateral; a seção de observações estava vazia na ficha de exemplo.}
+\end{table}
+
+Na palpação, os 18 sítios da ficha de exemplo levariam 49~s pela tabela e 54~s pelo mapa, em que cada clique avança um grau da escala e a dor severa exige quatro cliques. A diferença é pequena, e a vantagem do mapa está na visão de conjunto da distribuição da dor, não na velocidade; quem preferir pode usar a tabela ao lado.
+
+Nas seções que admitem ditado, a digitação dos valores do gabarito levaria, na mediana dos 30 casos de teste, 160~s (de 116 a 219~s). A revisão das sugestões do \texttt{qwen2.5:3b} na estratégia de ficha inteira, com as salvaguardas, incluindo a digitação dos valores omitidos ou errados, levaria 133~s (de 85 a 215~s), uma redução mediana de 15\% na interação com a interface. A esse tempo somam-se, porém, o da fala e o da espera pelo modelo. As narrativas têm de 96 a 153 palavras e, lidas pela voz sintética do Experimento~B, duraram de 56 a 89~s. A estruturação das cinco seções levou de 1,3 a 3,8~minutos no computador de desenvolvimento (\autoref{sec:res-sistema}). Nesse ambiente, portanto, o ditado não reduz o tempo total do registro: reduz a digitação e o esforço de interação, mas acrescenta uma espera maior do que o tempo economizado. O balanço depende da velocidade de inferência do servidor em que o sistema for implantado e de a espera poder ser aproveitada, por exemplo, para seguir com o exame clínico enquanto o modelo trabalha.
+
+\subsection{Avaliação heurística}
+
+A \autoref{tb:heuristica} lista os problemas encontrados na inspeção. Nenhum foi classificado como catástrofe. O mais grave era o botão que aceitava de uma vez todas as sugestões pendentes da IA: ele agilizava a revisão, mas permitia aceitar valores sem ler as evidências, justamente o comportamento que a revisão humana obrigatória procura evitar, e contrariava o aceite campo a campo exigido pelo RF07. O botão foi removido, e o painel passou a mostrar apenas quantas sugestões aguardam revisão. Também foram corrigidos durante a avaliação o envio para revisão sem aviso de campos obrigatórios em branco e o indicador de completude ambíguo.
+
+\begin{table}[htbp]
+	\caption{Problemas de usabilidade encontrados na avaliação heurística}
+	\label{tb:heuristica}
+	\footnotesize
+	\centering
+	\begin{tabularx}{\textwidth}{|L{3.4cm}|Y|c|L{2.1cm}|}
+		\hline
+		\textbf{Heurística} & \textbf{Problema} & \textbf{Sev.} & \textbf{Situação} \\ \hline
+		Prevenção de erros & O botão ``Aceitar as pendentes'' aplicava todas as sugestões da IA de uma vez, sem que as evidências fossem lidas & 3 & Corrigido: botão removido; cada sugestão exige decisão própria \\ \hline
+		Prevenção de erros & A ficha podia ser enviada para revisão com campos obrigatórios em branco, sem aviso & 2 & Corrigido: confirmação com o número de campos faltantes \\ \hline
+		Consistência e padrões & A barra de completude mostrava 100\% enquanto a navegação exibia seções incompletas (por exemplo, 23/26), porque a barra considera só os obrigatórios & 2 & Corrigido: rótulo ``dos obrigatórios'' e cálculo durante a edição \\ \hline
+		Visibilidade do estado do sistema & A espera pelo modelo de linguagem, de um a quatro minutos, é indicada apenas por ``O modelo local está analisando'', sem estimativa de tempo nem progresso & 2 & Pendente \\ \hline
+		Controle e liberdade do usuário & Não há salvamento automático; o rascunho é salvo pelo botão ou por Ctrl+S, e a perda é evitada apenas pelo aviso ao sair da página & 2 & Pendente \\ \hline
+		Estética e \textit{design} minimalista & As medidas do estágio do ruído (questão 40) são exibidas mesmo quando não há ruído, e a mesma nota sobre milímetros se repete em todos os campos de medida & 1 & Pendente \\ \hline
+		Flexibilidade e eficiência de uso & No mapa de palpação, a dor severa exige quatro cliques no mesmo sítio & 1 & Mitigado pela tabela equivalente \\ \hline
+		Ajuda e documentação & Não há ajuda contextual nem manual; as orientações se limitam às descrições dos campos & 1 & Pendente \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026). Severidade de 0 a 4 \cite{nielsenmack1994}.}
+\end{table}
+
+A inspeção também registrou pontos fortes. A correspondência com o mundo real é alta: cada campo traz o número da questão na ficha em papel, o odontograma segue a notação FDI e o mapa de palpação reproduz o rosto do paciente, com os lados identificados. O estado de cada ficha é sempre visível, pelo selo de status, pelas contagens por seção e pelas faixas que explicam o que o usuário pode fazer, como ``Ela volta a ser editável se o professor a devolver''. Os erros de validação aparecem em português, junto ao campo, e a seção com erro é marcada na navegação. As decisões clínicas são identificadas como exclusivas do examinador, e o painel de ditado não aparece nessas seções.
 
 \section{Experimento D: validação do pipeline analítico}
 \label{sec:res-exp-d}

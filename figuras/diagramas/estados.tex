@@ -1,0 +1,20 @@
+% Diagrama de estados da ficha clínica
+\begin{tikzpicture}[
+    font=\small,
+    estado/.style={draw, rounded corners=6pt, minimum width=2.9cm, minimum height=1cm, align=center, fill=gray!8},
+    seta/.style={-{Stealth[length=2.5mm]}, thick},
+    rotulo/.style={font=\footnotesize, align=center, fill=white, inner sep=1.5pt},
+    node distance=2.2cm and 3.2cm]
+  \node[circle, fill=black, minimum size=3mm, inner sep=0] (inicio) {};
+  \node[estado, right=1.6cm of inicio] (rascunho) {Rascunho\\\footnotesize(editável)};
+  \node[estado, right=of rascunho] (revisao) {Em revisão\\\footnotesize(somente leitura)};
+  \node[estado, right=of revisao] (aprovada) {Aprovada\\\footnotesize(imutável)};
+  \node[estado, below=1.8cm of revisao] (adendo) {Nova versão\\\footnotesize(rascunho do adendo)};
+
+  \draw[seta] (inicio) -- node[rotulo, above=3pt] {abrir\\atendimento} (rascunho);
+  \draw[seta] ([yshift=3mm]rascunho.east) -- node[rotulo, above=2pt] {aluno envia} ([yshift=3mm]revisao.west);
+  \draw[seta] ([yshift=-3mm]revisao.west) -- node[rotulo, below=2pt] {professor devolve\\com comentário} ([yshift=-3mm]rascunho.east);
+  \draw[seta] (revisao) -- node[rotulo, above=2pt] {professor\\aprova} (aprovada);
+  \draw[seta] (aprovada.south) |- node[rotulo, pos=0.25, right=2pt] {adendo} (adendo.east);
+  \draw[seta] (adendo.west) -| node[rotulo, pos=0.75, left=2pt] {segue o\\mesmo fluxo} (rascunho.south);
+\end{tikzpicture}

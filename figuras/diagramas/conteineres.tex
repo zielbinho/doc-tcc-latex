@@ -1,0 +1,31 @@
+% Diagrama de contêineres (modelo C4, nível 2)
+\begin{tikzpicture}[
+    font=\small,
+    pessoa/.style={draw, rounded corners=10pt, fill=gray!15, align=center, minimum width=3.4cm, minimum height=1.1cm},
+    cont/.style={draw, rounded corners=3pt, fill=white, align=center, minimum width=3.6cm, minimum height=1.15cm},
+    banco/.style={draw, cylinder, shape border rotate=90, aspect=0.18, fill=white, align=center, minimum width=3.4cm, minimum height=1.5cm},
+    seta/.style={-{Stealth[length=2.2mm]}, thick},
+    rotulo/.style={font=\scriptsize, align=center, fill=white, inner sep=1pt}]
+  \node[pessoa] (usuarios) at (0,0) {\textbf{Usuários}\\\footnotesize aluno, professor,\\\footnotesize pesquisador, administrador};
+  \node[cont] (web) at (0,-2.1) {\textbf{Interface web}\\\footnotesize React (navegador ou \textit{tablet})};
+  \node[cont] (caddy) at (0,-4.3) {\textbf{Proxy reverso}\\\footnotesize Caddy (HTTPS)};
+  \node[cont] (api) at (0,-6.3) {\textbf{API}\\\footnotesize Node.js + Fastify\\\footnotesize autenticação, RBAC, auditoria};
+  \node[banco] (bd) at (0,-9.1) {\textbf{PostgreSQL}\\\footnotesize relacional + JSONB\\\footnotesize RLS, pgcrypto};
+  \node[cont] (transc) at (8,-4.6) {\textbf{Transcrição}\\\footnotesize FastAPI + faster-whisper};
+  \node[cont] (llm) at (8,-6.3) {\textbf{Modelo de linguagem}\\\footnotesize Ollama (qwen2.5)};
+  \node[cont] (anal) at (8,-8.0) {\textbf{Serviço analítico}\\\footnotesize FastAPI + Pandas + SciPy};
+
+  \begin{scope}[on background layer]
+    \node[draw, dashed, rounded corners, fit=(caddy)(api)(bd)(transc)(llm)(anal), inner sep=12pt,
+          label={[font=\footnotesize\bfseries, anchor=north east]north east:Servidor da UEPG (Docker Compose)}] {};
+  \end{scope}
+
+  \draw[seta] (usuarios) -- (web);
+  \draw[seta] (web) -- node[rotulo, right=3pt] {HTTPS} (caddy);
+  \draw[seta] (caddy) -- (api);
+  \draw[seta] (api) -- node[rotulo, right=3pt] {papel \texttt{lord\_app}\\(sujeito à RLS)} (bd);
+  \draw[seta] (api.east) -- ++(1.2,0) |- node[rotulo, pos=0.72, above=1pt] {áudio} (transc.west);
+  \draw[seta] (api.east) -- node[rotulo, pos=0.62, above=1pt] {relato + esquema} (llm.west);
+  \draw[seta] (api.east) -- ++(1.2,0) |- node[rotulo, pos=0.72, below=1pt] {sem identificação} (anal.west);
+  \draw[seta] (anal.south) |- node[rotulo, pos=0.72, below=2pt] {papel \texttt{lord\_analitico}:\\só visões pseudonimizadas} (bd.east);
+\end{tikzpicture}

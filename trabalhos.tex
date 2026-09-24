@@ -7,11 +7,11 @@ A transição digital na odontologia tem sido impulsionada pela necessidade de o
 
 \citeonline{surdu2025} conduziram uma revisão sobre o impacto de ferramentas digitais e plataformas em nuvem na odontologia e concluíram que a telemedicina e a digitalização de registros aumentam a eficiência clínica e melhoram o diagnóstico remoto. O estudo aponta a substituição dos prontuários tradicionais por bases eletrônicas como passo inicial para a modernização do cuidado, o que corrobora a premissa deste trabalho. A revisão, porém, não trata de um instrumento clínico específico nem de análise longitudinal.
 
-No contexto de sistemas inteligentes, \citeonline{alturkestani2021} discutem a aplicação de ciência de dados na construção de sistemas de suporte à decisão clínica em ortodontia, com \textit{pipelines} de coleta, armazenamento, processamento automatizado e análise por aprendizado de máquina. Abordagens desse tipo concentram-se na análise de exames de imagem avançados, como tomografias. O sistema desenvolvido para a LORD-UEPG preenche uma lacuna distinta: a captura e a análise de variáveis categóricas, numéricas e textuais (escalas de dor, mapas de palpação, medidas de abertura bucal e informações sobre próteses) coletadas na rotina ambulatorial.
+No contexto de sistemas inteligentes, \citeonline{alturkestani2021} revisam as abordagens de ciência de dados para sistemas de suporte à decisão clínica em ortodontia, organizadas em coleta, armazenamento e gestão dos dados, processamento, análise por aprendizado de máquina e comunicação dos resultados. Os dados combinam prontuários, exame clínico, exames de imagem, como tomografias, e dados biológicos, e os autores apresentam uma plataforma \textit{web} de gestão desses dados para o suporte à decisão em ATM e em odontologia. O foco, porém, é a decisão clínica apoiada por aprendizado de máquina sobre dados de pesquisa multimodais. O sistema desenvolvido para a LORD-UEPG preenche uma lacuna distinta: a captura e a análise, sem finalidade diagnóstica, das variáveis categóricas, numéricas e textuais (escalas de dor, mapas de palpação, medidas de abertura bucal e informações sobre próteses) coletadas na rotina ambulatorial.
 
-A extração de conhecimento estatístico a partir de dados desse tipo é ilustrada por \citeonline{sude2021}, que utilizaram dados de prontuários eletrônicos para avaliar características e desfechos de tratamento em pacientes com distonia oromandibular e sinais de DTM. A análise retrospectiva, cruzando variáveis de tratamento, evidencia o potencial de um módulo analítico sobre registros clínicos estruturados. Esse tipo de estudo, contudo, depende da existência prévia de uma base estruturada, justamente o que falta à LORD-UEPG.
+A análise de dados desse tipo é ilustrada por \citeonline{sude2021}, que compararam características relacionadas à DTM e desfechos de tratamento de pacientes com distonia oromandibular atendidos em dois serviços, uma clínica de distúrbios do movimento e uma de dor orofacial. O estudo, transversal, coletou os dados por um questionário na \textit{web} respondido pelos pacientes, com instrumentos validados como o rastreador de dor por DTM e a escala de limitação funcional da mandíbula, ambos do DC/TMD. O trabalho mostra o valor de medidas padronizadas para comparar grupos de pacientes com DTM, mas os dados foram coletados especificamente para a pesquisa, em um único momento: não há registro clínico contínuo que permita acompanhar a evolução de cada paciente, justamente o que falta à LORD-UEPG.
 
-\citeonline{singhal2025} apresentam uma plataforma de saúde na pilha MERN com funcionalidades preditivas baseadas em IA, e \citeonline{zalke2026} propõem um \textit{framework} em Python para o exame automatizado de registros de saúde. Ambos confirmam a viabilidade das tecnologias escolhidas, mas são voltados à saúde geral, não contemplam o instrumento RDC/TMD e, no primeiro caso, empregam a IA para predição, finalidade que este trabalho evita.
+\citeonline{singhal2025} apresentam uma plataforma de saúde na pilha MERN (MongoDB, Express, React e Node.js) em que a IA analisa prontuários, dados de dispositivos vestíveis e hábitos de vida para estimar riscos, como os de doenças cardiovasculares e diabetes, e sugerir orientações personalizadas. O trabalho confirma a viabilidade de uma interface React sobre uma API em Node.js, mas é voltado à saúde geral, não contempla o instrumento RDC/TMD e emprega a IA para predição, finalidade que este trabalho evita.
 
 No campo da IA aplicada à documentação, \citeonline{agrawal2022} demonstraram que LLMs extraem informação de textos clínicos com pouca ou nenhuma anotação, e \citeonline{radford2023} apresentaram o Whisper, que viabiliza a transcrição de fala em português. Nenhum dos dois trabalhos trata de odontologia nem de execução em infraestrutura institucional com revisão humana obrigatória, aspectos centrais da presente proposta.
 
@@ -19,7 +19,7 @@ Por fim, \citeonline{shojaei2024} revisam a segurança e a privacidade em sistem
 
 \section{Sistemas existentes}
 
-Além da literatura acadêmica, foram considerados sistemas de prontuário disponíveis. O OpenDental é um sistema de gestão odontológica de código aberto, voltado principalmente ao mercado norte-americano. O e-SUS APS (Prontuário Eletrônico do Cidadão), do Ministério da Saúde, é gratuito e possui módulo de atendimento odontológico, mas é orientado à atenção básica. Os sistemas comerciais nacionais de gestão de consultórios são oferecidos por assinatura, em nuvem do fornecedor, com foco em agenda, financeiro e odontograma. Nenhum deles contempla o fluxo pedagógico de supervisão docente nem o instrumento RDC/TMD adotado pela Liga. \todo{confirmar as características de cada sistema (documentação oficial ou teste) antes da versão final.}
+Além da literatura acadêmica, foram considerados sistemas de prontuário disponíveis. O Open Dental é um sistema de gestão odontológica desenvolvido nos Estados Unidos, com agenda, prontuário, odontograma e faturamento, instalado em servidor da própria clínica. Foi distribuído como software livre, sob a licença GPL, até a versão 24.4, quando passou a ter licença proprietária. O Prontuário Eletrônico do Cidadão (PEC) do e-SUS APS, do Ministério da Saúde, é gratuito, pode ser instalado em servidor da unidade de saúde ou do município e possui atendimento odontológico, mas é orientado à atenção primária. Os sistemas comerciais nacionais de gestão de consultórios são, em geral, oferecidos por assinatura e hospedados na nuvem do fornecedor, com foco em agenda, financeiro e odontograma. Nenhum deles contempla o fluxo pedagógico de supervisão docente nem o instrumento RDC/TMD adotado pela Liga.
 
 \section{Síntese comparativa}
 
@@ -33,12 +33,11 @@ O \autoref{qua:trabalhos-descritivo} resume as tecnologias, as limitações e a 
 		\hline
 		\textbf{Trabalho} & \textbf{Abordagem e tecnologias} & \textbf{Limitações para o contexto da LORD} & \textbf{Diferença da proposta} \\ \hline
 		\citeonline{surdu2025} & Revisão sobre telemedicina e plataformas digitais em odontologia & Visão geral; sem instrumento clínico específico & Sistema implementado para a ficha RDC/TMD da Liga \\ \hline
-		\citeonline{alturkestani2021} & Suporte à decisão em ortodontia; \textit{pipelines} de dados e aprendizado de máquina sobre imagens & Foco em imagem e em decisão clínica & Dados ambulatoriais tabulares e textuais; sem finalidade diagnóstica \\ \hline
-		\citeonline{sude2021} & Análise retrospectiva de dados de PEP em pacientes com DTM & Pressupõe base estruturada preexistente & Cria a base estruturada e o módulo analítico \\ \hline
+		\citeonline{alturkestani2021} & Suporte à decisão em ortodontia; aprendizado de máquina sobre dados clínicos, de imagem e biológicos & Foco em decisão clínica e em dados de pesquisa multimodais & Dados da rotina ambulatorial; sem finalidade diagnóstica \\ \hline
+		\citeonline{sude2021} & Questionário \textit{web} transversal com instrumentos do DC/TMD & Coleta pontual, feita para a pesquisa; sem acompanhamento longitudinal & Registro clínico contínuo, com análise da evolução \\ \hline
 		\citeonline{singhal2025} & Plataforma MERN com IA preditiva & Saúde geral; MongoDB sem integridade relacional; IA para predição & Persistência híbrida; IA restrita à documentação \\ \hline
-		\citeonline{zalke2026} & \textit{Framework} Python/Pandas para análise de registros de saúde & Apenas a camada analítica & Sistema completo, da coleta à análise \\ \hline
 		\citeonline{agrawal2022} & LLMs para extração de informação clínica & Não odontológico; modelos em nuvem & Modelos locais, voz e revisão humana obrigatória \\ \hline
-		OpenDental & Gestão odontológica de código aberto & Voltado ao mercado norte-americano; sem RDC/TMD & Instrumento da Liga; fluxo pedagógico \\ \hline
+		Open Dental & Gestão odontológica instalada na clínica & Voltado ao mercado norte-americano; licença proprietária desde a versão 24.4; sem RDC/TMD & Instrumento da Liga; fluxo pedagógico \\ \hline
 		e-SUS APS (PEC) & Prontuário público do SUS com módulo odontológico & Atenção básica; sem RDC/TMD e sem análise da Liga & Especializado em DTM e prótese \\ \hline
 		Sistemas comerciais & Gestão de consultório em nuvem, por assinatura & Custo recorrente; dados fora da instituição & Custo zero; dados sob guarda da UEPG \\ \hline
 	\end{tabularx}
@@ -54,17 +53,15 @@ O \autoref{qua:trabalhos-descritivo} resume as tecnologias, as limitações e a 
 		\textbf{Trabalho} & \textbf{F1} & \textbf{F2} & \textbf{F3} & \textbf{F4} & \textbf{F5} & \textbf{F6} & \textbf{F7} \\ \hline
 		\citeonline{surdu2025} & S & N & -- & N & N & -- & -- \\ \hline
 		\citeonline{alturkestani2021} & S & N & P & P & N & -- & -- \\ \hline
-		\citeonline{sude2021} & S & S & S & S & N & -- & -- \\ \hline
+		\citeonline{sude2021} & S & P & P & N & N & -- & -- \\ \hline
 		\citeonline{singhal2025} & N & N & S & P & N & N & -- \\ \hline
-		\citeonline{zalke2026} & N & N & P & S & N & -- & -- \\ \hline
 		\citeonline{agrawal2022} & N & N & S & N & S & N & -- \\ \hline
-		OpenDental & S & N & S & P & N & S & S \\ \hline
-		e-SUS APS (PEC) & S & N & S & P & N & S & S \\ \hline
-		Sistemas comerciais & S & N & S & P & ? & N & N \\ \hline
+		Open Dental & S & N & S & P & N & S & P \\ \hline
+		e-SUS APS (PEC) & P & N & S & P & N & S & S \\ \hline
 		\textbf{Este trabalho} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} & \textbf{S} \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
-	\nota{F1: foco odontológico; F2: suporte à ficha RDC/TMD; F3: registro clínico estruturado; F4: análise longitudinal; F5: IA na documentação clínica; F6: execução em infraestrutura própria da instituição; F7: sem custo de licença. S: sim; P: parcial; N: não; --: não se aplica; ?: a confirmar. \todo{validar cada célula na fonte original.}}
+	\nota{F1: foco odontológico; F2: suporte à ficha RDC/TMD; F3: registro clínico estruturado; F4: análise longitudinal; F5: IA na documentação clínica; F6: execução em infraestrutura própria da instituição; F7: sem custo de licença. S: sim; P: parcial; N: não; --: não se aplica. Os sistemas comerciais não constam do quadro por variarem entre fornecedores.}
 \end{quadro}
 
 Em síntese, nenhum dos trabalhos analisados reúne, em uma mesma solução, o instrumento clínico da Liga, o fluxo de supervisão docente, a análise longitudinal, a IA restrita à documentação e a execução em infraestrutura institucional sem custo de licença. Essa combinação constitui a contribuição deste trabalho.

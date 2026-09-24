@@ -1,0 +1,33 @@
+% Diagrama de sequência do ditado com IA
+\begin{tikzpicture}[
+    font=\scriptsize,
+    ator/.style={draw, fill=gray!12, rounded corners=2pt, minimum width=2.1cm, minimum height=0.75cm, align=center, font=\footnotesize\bfseries},
+    msg/.style={-{Stealth[length=2mm]}, thick},
+    volta/.style={-{Stealth[length=2mm]}, thick, dashed},
+    nota/.style={draw, fill=yellow!10, align=left, font=\scriptsize, inner sep=3pt}]
+  % linhas de vida
+  \foreach \nome/\x/\texto in {aca/0/Acadêmico, int/2.6/Interface, api/5.2/API, tra/7.8/Transcrição, llm/10.4/Ollama, bd/13/Banco} {
+    \node[ator] (\nome) at (\x,0) {\texto};
+    \draw[gray, dashed] (\nome.south) -- (\x,-12.2);
+  }
+  \newcommand{\mensagem}[5][msg]{% estilo, origem x, destino x, y, texto
+    \draw[#1] (#2,#4) -- node[above, fill=white, inner sep=1pt] {#5} (#3,#4);}
+  \mensagem{0}{2.6}{-1.0}{1. grava o relato}
+  \mensagem{2.6}{5.2}{-1.6}{2. POST /transcricoes (áudio)}
+  \mensagem{5.2}{7.8}{-2.2}{3. áudio}
+  \mensagem[volta]{7.8}{5.2}{-2.8}{4. texto (áudio descartado)}
+  \mensagem[volta]{5.2}{2.6}{-3.4}{5. transcrição}
+  \mensagem{0}{2.6}{-4.0}{6. corrige o texto e pede sugestões}
+  \mensagem{2.6}{5.2}{-4.6}{7. POST /fichas/:id/sugestoes}
+  \mensagem{5.2}{10.4}{-5.2}{8. \textit{prompt} + esquema da seção}
+  \mensagem[volta]{10.4}{5.2}{-5.8}{9. JSON: valor e evidência por campo}
+  \node[nota, anchor=west] at (5.35,-6.55) {10. salvaguardas: esquema, evidência presente no relato,\\\phantom{10. }coerência valor--evidência; descarta o restante};
+  \mensagem{5.2}{13}{-7.4}{11. grava sugestao\_ia (modelo, versão do \textit{prompt})}
+  \mensagem[volta]{5.2}{2.6}{-8.0}{12. sugestões + trechos}
+  \mensagem{2.6}{0}{-8.6}{13. exibe para revisão}
+  \mensagem{0}{2.6}{-9.2}{14. aceita, edita ou rejeita cada uma}
+  \mensagem{2.6}{5.2}{-9.8}{15. POST /sugestoes/:id/decisoes}
+  \mensagem{5.2}{13}{-10.4}{16. grava as decisões}
+  \mensagem{2.6}{5.2}{-11.0}{17. PUT /fichas/:id (rascunho)}
+  \mensagem{5.2}{13}{-11.6}{18. salva a ficha}
+\end{tikzpicture}

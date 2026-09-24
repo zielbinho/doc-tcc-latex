@@ -1,14 +1,31 @@
 \chapter{Conclusão}
 \label{cap:conclusao}
 
-A digitalização direcionada e arquitetada especificamente para o acompanhamento odontológico contínuo mostrou-se um caminho promissor. A proposta não se resume a evitar a perda física de papéis: trata-se de introduzir uma cultura analítica, orientada a dados, no ambiente de ensino e prática clínica da UEPG, sem transferir à máquina a responsabilidade pelo diagnóstico.
+Este trabalho desenvolveu um sistema web de prontuários eletrônicos para a LORD-UEPG que digitaliza a ficha clínica da Liga, mantém os dados sob a guarda da instituição, usa inteligência artificial apenas para organizar o relato do acadêmico e transforma os registros em indicadores de evolução clínica. A proposta não se resume a evitar a perda de papéis: trata-se de introduzir uma cultura orientada a dados no ensino e na prática clínica da Liga, sem transferir à máquina a responsabilidade pelo diagnóstico.
 
-\todo{retomar cada objetivo específico e indicar como foi atingido, com os principais números dos experimentos.}
+Os objetivos específicos foram atingidos da seguinte forma:
+
+\begin{itemize}
+	\item \textbf{Levantamento de requisitos}: as conversas com a Liga e a análise campo a campo da ficha em papel resultaram em um esquema JSON versionado com 144 campos em 15 seções, cuja cobertura das questões 1 a 75 é verificada por teste automatizado, e na classificação de cada seção pela forma de captação mais adequada.
+	\item \textbf{Arquitetura e persistência}: o modelo híbrido, com as variáveis estruturadas em colunas e a ficha, o odontograma e o mapa de palpação em \texttt{JSONB}, leu o prontuário de três a quatro vezes mais rápido que um modelo totalmente normalizado, gravou os atendimentos em pouco mais da metade do tempo e ocupou quase metade do espaço, com 10.000 pacientes.
+	\item \textbf{Interfaces}: o editor da ficha é gerado a partir do esquema, com mapa de palpação, odontograma, fluxo de revisão docente, painéis de evolução e tema claro ou escuro. A auditoria automática não encontrou violações das WCAG 2.1 nas dez telas principais, depois de corrigidas três violações sérias, e a avaliação heurística levou a três correções, entre elas a remoção do aceite em lote das sugestões da IA.
+	\item \textbf{Segurança e LGPD}: controle de acesso por papéis na API e no banco, cifragem dos dados pessoais, trilha de auditoria, imutabilidade das fichas aprovadas e pseudonimização dos dados de pesquisa foram implementados e são verificados por 249 testes automatizados, incluindo 37 testes de ataque; a revisão de segurança encontrou e corrigiu dois defeitos reais.
+	\item \textbf{Módulo de IA}: executado inteiramente na máquina local, o \texttt{qwen2.5:3b} produziu respostas válidas em 100\% dos casos e alcançou $F_1$ de 0,59 na estratégia de ficha inteira, com alucinação de 32\%, reduzida a 25\% pelas salvaguardas. O resultado confirma que a IA pode acelerar a documentação, mas não dispensa a revisão humana campo a campo, que o sistema torna obrigatória.
+	\item \textbf{Módulo analítico}: na coorte sintética de efeito conhecido, os intervalos de confiança de 95\% das reduções de dor estimadas (38,0\%, 24,0\% e 5,2\%) contiveram as reduções programadas (40\%, 25\% e 10\%), a ordem entre os tratamentos foi reproduzida, e o abandono detectado coincidiu com o programado, com resultados idênticos a partir do banco e dos dados do gerador.
+	\item \textbf{Avaliação}: além dos Experimentos~A e D, o Experimento~B mostrou que o Whisper \texttt{small} transcreve os relatos com cerca de 4\% de palavras erradas no silêncio e 6\% com ruído, mas que os erros recaem sobre termos clínicos e reduzem o desempenho da estruturação, sobretudo depois das salvaguardas. A usabilidade foi avaliada sem participantes, pela auditoria de acessibilidade, pelo KLM e pela avaliação heurística. O KLM estimou em cerca de 9,7 minutos o preenchimento da ficha completa pelo formulário e mostrou que, no computador de desenvolvimento, o ditado reduz a digitação, mas não o tempo total, por causa da espera pelo modelo. O teste com usuários, que depende de aprovação ética, ficou como o principal passo seguinte.
+\end{itemize}
+
+Em síntese, o sistema responde às três questões que orientaram o projeto. Os dados podem permanecer na instituição com ferramentas gratuitas e com desempenho adequado ao volume da Liga. A IA pode ser usada sem finalidade diagnóstica, desde que restrita por construção e sempre revisada. E a captação deve ser híbrida: formulário e componentes visuais para as respostas fechadas e o exame, e ditado para os relatos narrativos, cuja vantagem de tempo depende de um servidor com capacidade de processamento adequada.
 
 \section{Trabalhos futuros}
 
 \begin{itemize}
-	\item Implantação em atendimentos reais após aprovação ética e adoção de termo de consentimento para gravação de áudio;
+	\item Implantação no servidor da UEPG, com teste da configuração de contêineres, varredura com o OWASP ZAP e medição da latência dos modelos com GPU;
+	\item Teste de usabilidade com acadêmicos e professores da Liga, após aprovação ética, conforme o protocolo do Apêndice~\ref{apendice:usabilidade}, incluindo a taxa de aceitação das sugestões da IA;
+	\item Avaliação de modelos de linguagem maiores e avaliação humana dos campos de texto livre;
+	\item Gravação de relatos reais, com ruído da clínica, para repetir o Experimento~B em condições realistas;
+	\item Salvaguardas com correspondência aproximada da evidência, para descartar menos valores corretos cuja citação foi reescrita pelo modelo;
+	\item Validação da ficha de retorno e da matriz de permissões com a coordenação da Liga;
 	\item Assinatura digital com certificação ICP-Brasil, permitindo a eliminação do prontuário em papel;
 	\item Migração da ficha para o DC/TMD, aproveitando o esquema versionado;
 	\item Preenchimento do questionário de autorrelato pelo próprio paciente em \textit{tablet}, na sala de espera;

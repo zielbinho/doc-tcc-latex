@@ -1,0 +1,35 @@
+% Diagrama entidade-relacionamento do esquema principal (migração 001)
+\begin{tikzpicture}[
+    font=\scriptsize,
+    tabela/.style={draw, rectangle split, rectangle split parts=2, rectangle split part fill={gray!20, white},
+                   align=left, inner sep=3pt, text width=4.4cm,
+                   execute at begin node={\raggedright\hyphenpenalty=10000\exhyphenpenalty=10000}},
+    rel/.style={thick},
+    card/.style={font=\scriptsize\bfseries, fill=white, inner sep=0.5pt}]
+  \newcommand{\pk}[1]{\underline{#1}}
+  \newcommand{\fk}[1]{\textit{#1}}
+
+  \node[tabela] (usuario) at (0,0) {\textbf{usuario}\nodepart{two}\pk{id} uuid\\ nome, email\\ senha\_hash (Argon2id)\\ papel, ativo\\ tentativas\_falhas, bloqueado\_ate};
+  \node[tabela] (sessao) at (0,-4.2) {\textbf{sessao}\nodepart{two}\pk{token\_hash} bytea\\ \fk{usuario\_id}\\ criada\_em, expira\_em};
+  \node[tabela] (auditoria) at (0,-7.4) {\textbf{auditoria} (só inserção)\nodepart{two}\pk{id} bigint\\ em, \fk{usuario\_id}\\ acao, entidade, entidade\_id\\ detalhes jsonb, ip};
+
+  \node[tabela] (paciente) at (5.6,0) {\textbf{paciente}\nodepart{two}\pk{id} uuid\\ numero\_prontuario, nome\\ data\_nascimento, sexo\\ telefone\_cifrado, endereco\_cifrado\\ rg\_cifrado, cpf\_cifrado\\ cpf\_indice (HMAC)};
+  \node[tabela] (consentimento) at (5.6,-4.6) {\textbf{consentimento}\nodepart{two}\pk{id} uuid\\ \fk{paciente\_id}\\ tipo, versao\_termo, aceito\_em};
+  \node[tabela] (tratamento) at (5.6,-7.4) {\textbf{tratamento}\nodepart{two}\pk{id} uuid\\ \fk{paciente\_id}\\ categoria, inicio, fim};
+
+  \node[tabela] (atendimento) at (11.2,0) {\textbf{atendimento}\nodepart{two}\pk{id} uuid\\ \fk{paciente\_id}, data, tipo\\ \fk{aluno\_id}, \fk{professor\_id}};
+  \node[tabela] (odontograma) at (11.2,-3.2) {\textbf{odontograma}\nodepart{two}\pk{\fk{atendimento\_id}}\\ dados \textbf{jsonb}};
+  \node[tabela] (ficha) at (11.2,-6.8) {\textbf{ficha}\nodepart{two}\pk{id} uuid\\ \fk{atendimento\_id}, tipo\\ schema\_versao, versao\\ \fk{ficha\_anterior\_id} (adendo)\\ dados \textbf{jsonb}, status, completude\\ dor\_atual, pior\_dor, dor\_media,\\ abertura\_max (colunas geradas)};
+  \node[tabela] (sugestao) at (11.2,-11.2) {\textbf{sugestao\_ia}\nodepart{two}\pk{id} uuid\\ \fk{ficha\_id}, secao, origem\\ modelo, versao\_prompt\\ saida \textbf{jsonb}, decisoes \textbf{jsonb}};
+
+  \draw[rel] (usuario) -- node[card, pos=0.12] {1} node[card, pos=0.88] {N} (sessao);
+  \draw[rel] (usuario.west) -- ++(-0.35,0) |- node[card, pos=0.04] {1} node[card, pos=0.96] {N} (auditoria.west);
+  \draw[rel] (paciente) -- node[card, pos=0.1] {1} node[card, pos=0.9] {N} (consentimento);
+  \draw[rel] (paciente.east) -- ++(0.25,0) |- node[card, pos=0.04] {1} node[card, pos=0.96] {N} (tratamento.east);
+  \draw[rel] (paciente) -- node[card, pos=0.12] {1} node[card, pos=0.88] {N} (atendimento);
+  \draw[rel] (atendimento) -- node[card, pos=0.12] {1} node[card, pos=0.88] {0..1} (odontograma);
+  \draw[rel] (atendimento.east) -- ++(0.35,0) |- node[card, pos=0.04] {1} node[card, pos=0.96] {N} (ficha.east);
+  \draw[rel] (ficha.south east) ++(-0.3,0) -- ++(0,-0.35) -- ++(0.75,0) |- node[card, pos=0.75] {0..1} ([yshift=-0.4cm]ficha.east);
+  \draw[rel] (ficha) -- node[card, pos=0.12] {1} node[card, pos=0.88] {N} (sugestao);
+  \draw[rel] (usuario.north) -- ++(0,0.45) -| node[card, pos=0.02, left=1pt] {1} node[card, pos=0.45, above=1pt] {atendido por aluno e supervisionado por professor} node[card, pos=0.97, right=1pt] {N} (atendimento.north);
+\end{tikzpicture}

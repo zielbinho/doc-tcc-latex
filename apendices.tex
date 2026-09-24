@@ -79,6 +79,12 @@ O \autoref{cod:schema-ia} mostra o esquema derivado automaticamente para um camp
 \chapter{Roteiro da avaliação de usabilidade}
 \label{apendice:usabilidade}
 
+Este roteiro descreve o teste com usuários proposto como continuação do trabalho; ele não foi executado, e a avaliação de usabilidade apresentada na \autoref{sec:exp-usabilidade} foi feita sem participantes. A execução depende de aprovação prévia do Comitê de Ética em Pesquisa (\autoref{sec:etica}).
+
+\section{Participantes e desenho}
+
+Participam de 8 a 12 acadêmicos da LORD-UEPG e 2 ou 3 professores, estes para o fluxo de revisão. O critério de inclusão é ser membro ativo e já ter preenchido a ficha em papel; o de exclusão, ter participado do desenvolvimento do sistema. O tamanho da amostra baseia-se na evidência de que poucos usuários revelam a maior parte dos problemas de usabilidade \cite{nielsen1993}. O desenho é intrassujeitos: cada participante registra três casos simulados, de complexidade equivalente, em três condições (ficha em papel, formulário digital e formulário com ditado e IA), em ordem contrabalanceada por quadrado latino. Medem-se o tempo de preenchimento, a completude e os erros em relação ao gabarito, o escore SUS, a carga de trabalho pelo NASA-TLX \cite{hart1988} e a taxa de aceitação das sugestões da IA. As condições são comparadas pelo teste de Friedman, com comparações de Wilcoxon a posteriori.
+
 \section{Tarefas}
 
 \begin{enumerate}
@@ -91,22 +97,7 @@ O \autoref{cod:schema-ia} mostra o esquema derivado automaticamente para um camp
 
 \section{Questionário SUS}
 
-Cada item é respondido em escala de 1 (discordo totalmente) a 5 (concordo totalmente). O escore é obtido subtraindo 1 das respostas dos itens ímpares e subtraindo de 5 as respostas dos itens pares; a soma é multiplicada por 2,5, resultando em um valor de 0 a 100 \cite{brooke1996}.
-
-\begin{enumerate}
-	\item Eu acho que gostaria de usar este sistema com frequência.
-	\item Eu achei o sistema desnecessariamente complexo.
-	\item Eu achei o sistema fácil de usar.
-	\item Eu acho que precisaria do apoio de um técnico para conseguir usar este sistema.
-	\item Eu achei que as diversas funções deste sistema estavam bem integradas.
-	\item Eu achei que havia muita inconsistência neste sistema.
-	\item Eu imagino que a maioria das pessoas aprenderia a usar este sistema rapidamente.
-	\item Eu achei o sistema muito complicado de usar.
-	\item Eu me senti muito confiante usando o sistema.
-	\item Eu precisei aprender muitas coisas antes de conseguir usar este sistema.
-\end{enumerate}
-
-\todo{substituir por uma tradução validada do SUS para o português e citar a fonte.}
+Aplica-se a versão brasileira do SUS traduzida e adaptada transculturalmente por \citeonline{lourenco2022}, com os dez itens na redação publicada pelos autores. Cada item é respondido em escala de 1 (discordo totalmente) a 5 (concordo totalmente). O escore é obtido subtraindo 1 das respostas dos itens ímpares e subtraindo de 5 as respostas dos itens pares; a soma é multiplicada por 2,5, resultando em um valor de 0 a 100 \cite{brooke1996}, interpretado segundo \citeonline{bangor2008}.
 
 \section{Entrevista semiestruturada}
 
@@ -133,15 +124,16 @@ Cada item é respondido em escala de 1 (discordo totalmente) a 5 (concordo total
 		Ver prontuário identificado & Próprios & Sim & Não & Não \\ \hline
 		Preencher ficha (rascunho) & Sim & Sim & Não & Não \\ \hline
 		Usar ditado e IA & Sim & Sim & Não & Não \\ \hline
-		Aprovar ficha & Não & Sim & Não & Não \\ \hline
+		Revisar ficha (devolver ou aprovar) & Não & Sim & Não & Não \\ \hline
 		Registrar adendo em ficha aprovada & Sim & Sim & Não & Não \\ \hline
 		Ver painel do paciente & Próprios & Sim & Não & Não \\ \hline
 		Ver painéis de coorte & Não & Sim & Sim & Não \\ \hline
-		Exportar dados pseudonimizados & Não & Não & Sim & Não \\ \hline
+		Exportar dados pseudonimizados & Não & Sim & Sim & Não \\ \hline
+		Ver painel de qualidade dos dados & Não & Sim & Sim & Sim \\ \hline
 		Gerenciar usuários & Não & Não & Não & Sim \\ \hline
 		Consultar auditoria & Não & Não & Não & Sim \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026).}
 \end{table}
 
-\todo{confirmar a matriz com a coordenação da LORD.}
+A matriz foi definida pelos autores a partir das atribuições descritas pela Liga e do TCLE, e corresponde à implementação: cada linha é verificada por testes automatizados na API e, para o acesso aos prontuários, também pelas políticas de \textit{Row-Level Security} no banco. Alterações na matriz, caso a coordenação da Liga as solicite, restringem-se à lista de papéis de cada rota e às políticas correspondentes.

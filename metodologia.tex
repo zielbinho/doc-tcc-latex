@@ -6,17 +6,17 @@
 A pesquisa é de natureza aplicada e tecnológica. O escopo central é o desenvolvimento de um software e a avaliação experimental de seus módulos. O percurso metodológico divide-se nas etapas a seguir.
 
 \begin{enumerate}
-	\item \textbf{Levantamento de requisitos}: entrevistas com alunos e professores da LORD-UEPG e análise detalhada da ficha clínica em papel, para compreender o fluxo de atendimento e mapear as variáveis de DTM e prótese (\autoref{sec:requisitos}).
+	\item \textbf{Levantamento de requisitos}: conversas com alunos e professores da LORD-UEPG e análise detalhada da ficha clínica em papel, para compreender o fluxo de atendimento e mapear as variáveis de DTM e prótese (\autoref{sec:requisitos}).
 	\item \textbf{Projeto e desenvolvimento do sistema}: definição da arquitetura, da modelagem de dados híbrida e dos mecanismos de segurança, seguida da implementação iterativa das interfaces e serviços (\autoref{sec:arquitetura} a \autoref{sec:seguranca}).
 	\item \textbf{Módulo de estruturação por IA}: implementação da transcrição de fala e da estruturação da anamnese com modelos executados localmente, sob revisão humana obrigatória (\autoref{sec:metodo-ia}).
 	\item \textbf{Módulo analítico}: cálculo de indicadores de evolução clínica, análises estatísticas e painéis de visualização (\autoref{sec:metodo-analitico}).
-	\item \textbf{Avaliação}: experimentos com casos clínicos sintéticos para medir a qualidade da estruturação automática e o efeito da captação por áudio, teste de usabilidade com os usuários finais em ambiente simulado, validação do pipeline analítico e avaliação técnica de desempenho e segurança (\autoref{sec:protocolo}).
+	\item \textbf{Avaliação}: experimentos com casos clínicos sintéticos para medir a qualidade da estruturação automática e o efeito da captação por áudio, avaliação de usabilidade e acessibilidade sem participantes humanos, validação do pipeline analítico e avaliação técnica de desempenho e segurança (\autoref{sec:protocolo}).
 \end{enumerate}
 
 \section{Levantamento de requisitos}
 \label{sec:requisitos}
 
-Os requisitos foram levantados em reuniões com membros e professores da LORD-UEPG, nas quais foram catalogadas as principais restrições e necessidades do acompanhamento de pacientes com DTM e usuários de prótese. \todo{registrar datas, número de reuniões e participantes; incluir as decisões sobre a ficha de retorno e as categorias de tratamento.}
+Os requisitos foram levantados a partir de quatro fontes. A primeira foram as conversas com membros e professores da LORD-UEPG, das quais resultaram as restrições do acompanhamento de pacientes com DTM e usuários de prótese e as três questões que orientaram o projeto: onde os dados ficarão armazenados, como usar IA sem finalidade diagnóstica e qual a melhor forma de captar as informações. A segunda foi a ficha clínica em papel da Liga (Anexo~\ref{anexo:ficha}), analisada campo a campo. A terceira foi o TCLE assinado pelos pacientes, que define a guarda do prontuário pela UEPG. A quarta foram os pareceres da banca de qualificação, que pediram, entre outros pontos, a persistência híbrida com \texttt{JSONB}, um protocolo de validação detalhado e a implementação efetiva dos requisitos de segurança e da LGPD. A ficha de retorno e a lista de categorias de tratamento, que a ficha atual não contempla, foram propostas pelos autores a partir das questões do RDC/TMD que fazem sentido repetir no acompanhamento (\autoref{sec:metodo-analitico}).
 
 \subsection{Análise da ficha clínica}
 \label{sec:ficha}
@@ -80,7 +80,7 @@ O fluxo reproduz a dinâmica pedagógica da Liga, em que os atendimentos são re
 	\caption{Diagrama de estados da ficha clínica}
 	\label{fig:estados-ficha}
 	\centering
-	\figtodo{diagrama de estados: Rascunho $\rightarrow$ Em revisão $\rightarrow$ Aprovada; Em revisão $\rightarrow$ Rascunho (devolvida); Aprovada $\rightarrow$ nova versão (adendo)}
+	\resizebox{\textwidth}{!}{\input{figuras/diagramas/estados}}
 	\fonte{Os autores (2026).}
 \end{figure}
 
@@ -101,7 +101,7 @@ Todas as ferramentas empregadas são gratuitas e, com exceção dos serviços de
 		Banco de dados (evolução) & Migrações em SQL versionadas & Acesso direto a RLS, colunas geradas, \texttt{pgcrypto} e gatilhos \\ \hline
 		Banco de dados & PostgreSQL 17, JSONB, \texttt{pgcrypto} & Integridade relacional com flexibilidade documental \cite{postgres-json}; criptografia de campos \\ \hline
 		Serviço de IA & Python, FastAPI, faster-whisper, Ollama & Transcrição e estruturação executadas localmente \cite{fasterwhisper,ollama} \\ \hline
-		Serviço analítico & Python, Pandas, SciPy & Transformação e análise estatística de dados tabulares \cite{zalke2026} \\ \hline
+		Serviço analítico & Python, Pandas, SciPy & Transformação e análise estatística de dados tabulares \cite{mckinney2010,virtanen2020} \\ \hline
 		Infraestrutura & Docker Compose, Caddy (HTTPS) & Implantação reprodutível no servidor da instituição \\ \hline
 		Qualidade & Vitest, Playwright, pytest, OWASP ZAP & Testes automatizados e varredura de segurança \cite{zap} \\ \hline
 	\end{tabularx}
@@ -117,13 +117,13 @@ A arquitetura separa a interface, o servidor principal e dois serviços especial
 	\caption{Arquitetura do sistema}
 	\label{fig:arquitetura}
 	\centering
-	\figtodo{diagrama de contêineres (C4): Navegador/Tablet $\rightarrow$ Caddy (HTTPS) $\rightarrow$ API Node.js $\rightarrow$ PostgreSQL; API $\rightarrow$ Serviço de IA (faster-whisper + Ollama); Serviço analítico $\rightarrow$ esquema pseudonimizado (somente leitura)}
+	\resizebox{\textwidth}{!}{\input{figuras/diagramas/conteineres}}
 	\fonte{Os autores (2026).}
 \end{figure}
 
 \subsection{Infraestrutura e guarda dos dados}
 
-Como o TCLE atribui à UEPG a guarda do prontuário e os dados de saúde são dados sensíveis \cite{lgpd2018}, o sistema foi projetado para ser executado integralmente em infraestrutura institucional. Todos os componentes, inclusive os modelos de IA, são empacotados em contêineres e implantados por um único arquivo Docker Compose em um servidor da universidade. Assim, nenhum dado clínico é enviado a serviços externos. Planos gratuitos de nuvem foram utilizados apenas no desenvolvimento e nos experimentos, e exclusivamente com dados sintéticos. \todo{indicar o servidor efetivamente disponibilizado (DEINFO, LCAD ou NTI) e suas especificações.}
+Como o TCLE atribui à UEPG a guarda do prontuário e os dados de saúde são dados sensíveis \cite{lgpd2018}, o sistema foi projetado para ser executado integralmente em infraestrutura institucional. Todos os componentes, inclusive os modelos de IA, são empacotados em contêineres e implantados por um único arquivo Docker Compose em um servidor da universidade. Assim, nenhum dado clínico é enviado a serviços externos. O desenvolvimento e todos os experimentos foram executados em um computador pessoal, exclusivamente com dados sintéticos: processador AMD Ryzen~7 5700U (8 núcleos e 16 \textit{threads}), 16~GB de memória, armazenamento SSD e Windows~11, sem GPU dedicada, de modo que os modelos de IA rodaram apenas em CPU. Essa configuração é inferior à de um servidor típico e serve como referência conservadora de desempenho. Para a implantação na UEPG, recomenda-se um servidor com ao menos 8 núcleos, 16~GB de memória e 100~GB de disco, que comporta o banco, a API, os serviços e o modelo de 3 bilhões de parâmetros; uma GPU tende a reduzir bastante a latência da IA, mas não é obrigatória.
 
 Durante o período deste trabalho, a ficha em papel e o TCLE assinado permanecem como documentos oficiais, e o sistema opera como registro complementar. A eliminação do papel depende de assinatura digital com certificação ICP-Brasil \cite{cfo91-2009}, tratada como trabalho futuro.
 
@@ -162,8 +162,8 @@ Entidades com estrutura estável e relações que exigem integridade referencial
 	\caption{Diagrama entidade-relacionamento}
 	\label{fig:der}
 	\centering
-	\figtodo{DER completo exportado do banco (dbdiagram.io ou DBeaver)}
-	\fonte{Os autores (2026).}
+	\resizebox{\textwidth}{!}{\input{figuras/diagramas/der}}
+	\fonte{Os autores (2026). Chave primária sublinhada; chave estrangeira em itálico. Para legibilidade, foram omitidas as referências de autoria a \texttt{usuario} (\texttt{criado\_por}, \texttt{registrado\_por}, \texttt{preenchido\_por}, \texttt{aprovado\_por}) e o esquema pseudonimizado, formado apenas por visões.}
 \end{figure}
 
 Os campos mais consultados pelo módulo analítico são expostos como colunas geradas a partir do documento \texttt{JSONB}, indexáveis como colunas comuns, conforme o \autoref{cod:coluna-gerada}. Essa técnica evita duplicação manual de dados e mantém o documento como fonte única.
@@ -223,7 +223,7 @@ O módulo transforma o relato do acadêmico em sugestões de preenchimento da fi
 	\caption{Fluxo do módulo de estruturação da anamnese}
 	\label{fig:fluxo-ia}
 	\centering
-	\figtodo{diagrama de sequência: Aluno $\rightarrow$ Interface $\rightarrow$ API $\rightarrow$ Serviço de IA (Whisper $\rightarrow$ LLM $\rightarrow$ validação) $\rightarrow$ API $\rightarrow$ tela de revisão $\rightarrow$ ficha (rascunho)}
+	\resizebox{\textwidth}{!}{\input{figuras/diagramas/sequencia-ia}}
 	\fonte{Os autores (2026).}
 \end{figure}
 
@@ -284,7 +284,7 @@ As salvaguardas que asseguram a ausência de finalidade diagnóstica são implem
 	\item a tabela \texttt{sugestao\_ia} registra o modelo, a versão do \textit{prompt}, a saída bruta e a decisão humana sobre cada campo (aceita, aceita e editada ou rejeitada), permitindo auditoria e medição da taxa de aceitação; a trilha de auditoria registra apenas contagens, sem o conteúdo do relato.
 \end{itemize}
 
-O modelo de referência do desenvolvimento é o Qwen2.5 de 3 bilhões de parâmetros (\texttt{qwen2.5:3b}, quantização Q4\_K\_M) executado pelo Ollama 0.34.3, com temperatura zero, semente fixa e janela de contexto de 8.192 \textit{tokens}. A transcrição usa o modelo \texttt{small} do faster-whisper 1.2.1 em CPU, com quantização \texttt{int8}. \todo{definir o segundo modelo avaliado no Experimento~A (por exemplo, \texttt{qwen2.5:7b} ou \texttt{llama3.1:8b}) e registrar a versão exata.}
+O modelo de referência do desenvolvimento é o Qwen2.5 de 3 bilhões de parâmetros (\texttt{qwen2.5:3b}, quantização Q4\_K\_M) executado pelo Ollama (versão 0.34.4 na medição final), com temperatura zero, semente fixa e janela de contexto de 8.192 \textit{tokens}. A transcrição usa o modelo \texttt{small} do faster-whisper 1.2.1 em CPU, com quantização \texttt{int8}. A escolha de um modelo pequeno decorre do ambiente disponível: sem GPU, a estruturação de um relato pelo modelo de 3 bilhões de parâmetros já leva cerca de dois minutos, e modelos maiores, como o \texttt{qwen2.5:7b}, levariam proporcionalmente mais. A avaliação de um modelo maior fica para quando houver um servidor com GPU.
 
 \section{Módulo analítico}
 \label{sec:metodo-analitico}
@@ -317,7 +317,7 @@ A intensidade característica da dor (ICD) e o escore de incapacidade (EI) são 
 	\mathrm{EI} = \frac{Q_{20} + Q_{21} + Q_{22}}{3} \times 10
 \end{equation}
 
-\noindent em que $Q_i$ é a resposta da questão $i$. O EI e o número de dias de afastamento ($Q_{19}$) são convertidos em pontos de incapacidade (0 a 3 cada): de 0 a 6 dias, 0 ponto; de 7 a 14, 1; de 15 a 30, 2; 31 ou mais, 3; EI de 0 a 29, 0 ponto; de 30 a 49, 1; de 50 a 69, 2; 70 ou mais, 3. O grau é 0 na ausência de dor; I se ICD~<~50 e menos de 3 pontos; II se ICD~$\geq$~50 e menos de 3 pontos; III com 3 ou 4 pontos; e IV com 5 ou 6 pontos. \todo{conferir os pontos de corte no manual do RDC/TMD \cite{dworkin1992,pereira2004}.}
+\noindent em que $Q_i$ é a resposta da questão $i$. O EI e o número de dias de afastamento ($Q_{19}$) são convertidos em pontos de incapacidade (0 a 3 cada): de 0 a 6 dias, 0 ponto; de 7 a 14, 1; de 15 a 30, 2; 31 ou mais, 3; EI de 0 a 29, 0 ponto; de 30 a 49, 1; de 50 a 69, 2; 70 ou mais, 3. O grau é 0 na ausência de dor; I se ICD~<~50 e menos de 3 pontos; II se ICD~$\geq$~50 e menos de 3 pontos; III com 3 ou 4 pontos; e IV com 5 ou 6 pontos. Os pontos de corte são os da versão de seis meses da escala, adotada no Eixo~II do RDC/TMD \cite{vonkorff1992,dworkin1992}, e são verificados por testes automatizados.
 
 \subsection{Indicadores de coorte}
 
@@ -347,7 +347,7 @@ As decisões sobre as sugestões chegam ao esquema pseudonimizado sem o relato, 
 
 São disponibilizados três painéis: (i) do paciente, para aluno e professor, com a evolução da dor, da abertura bucal e dos tratamentos em linha do tempo e um mapa facial de calor da palpação por consulta; (ii) da coorte, para professor e pesquisador, com diagramas de caixa da variação da dor por tratamento, tabela com os testes estatísticos e gráficos de prevalência; e (iii) de qualidade dos dados, que o administrador também acessa. Os gráficos seguem regras de visualização acessível: um único eixo vertical por gráfico, cores fixas por tratamento validadas para as formas comuns de daltonismo nos temas claro e escuro, rótulos diretos, e os mesmos números em tabela, para quem não distingue as cores ou usa leitor de tela.
 
-A análise da eficácia dos tratamentos exige que as mesmas medidas sejam repetidas nos retornos. Como a ficha atual é de primeira consulta, foi definida com a Liga uma \emph{ficha de retorno} reduzida, com as questões 16 a 22, 39, 44 e 45, a adesão ao tratamento e as intercorrências, além de uma lista fechada de categorias de tratamento. \todo{confirmar com a LORD o conteúdo da ficha de retorno e a lista de tratamentos.}
+A análise da eficácia dos tratamentos exige que as mesmas medidas sejam repetidas nos retornos. Como a ficha atual é de primeira consulta, os autores propuseram uma \emph{ficha de retorno} reduzida, com as questões 16 a 22, 39, 44 e 45, a adesão ao tratamento e as intercorrências, além de uma lista fechada de categorias de tratamento. Por ser um esquema versionado, a ficha de retorno pode ser ajustada pela Liga sem perda dos registros já feitos.
 
 \section{Protocolo de avaliação}
 \label{sec:protocolo}
@@ -361,49 +361,50 @@ Foram elaborados 40 casos clínicos fictícios. Cada caso é composto por um \em
 
 Os gabaritos são produzidos por um gerador em Python, com semente aleatória fixa (2026) para garantir a reprodutibilidade. Os casos são distribuídos igualmente entre cinco perfis clínicos: DTM predominantemente muscular, DTM articular, usuário de prótese, DTM associada ao uso de prótese e paciente sem DTM. As respostas são sorteadas sob regras de coerência clínica. Por exemplo, a pior dor nunca é menor que a dor atual, a abertura com auxílio supera a abertura sem auxílio, e o diagnóstico registrado é compatível com os achados de palpação. Todo gabarito é validado contra o esquema da ficha, e as regras de coerência são verificadas por testes automatizados.
 
-Para cada caso, o gerador produz também um roteiro destinado ao membro da Liga que redigirá a narrativa. O roteiro lista os fatos que devem aparecer, os campos que \emph{não} podem ser mencionados, por estarem vazios no gabarito, e de um a três desafios de linguagem sorteados. Os desafios são negações (``nega alergias''), expressões temporais imprecisas (``faz uns dois anos''), autocorreções (``não, é do lado esquerdo''), termos coloquiais (``trava'', ``dentadura''), informações irrelevantes e ordem diferente da ficha. A lista de campos a omitir torna mensurável a taxa de alucinação: qualquer valor extraído para esses campos é, por construção, indevido.
+Para cada caso, o gerador produz também um roteiro para a redação da narrativa. O roteiro lista os fatos que devem aparecer, os campos que \emph{não} podem ser mencionados, por estarem vazios no gabarito, e de um a três desafios de linguagem sorteados. Os desafios são negações (``nega alergias''), expressões temporais imprecisas (``faz uns dois anos''), autocorreções (``não, é do lado esquerdo''), termos coloquiais (``trava'', ``dentadura''), informações irrelevantes e ordem diferente da ficha. A lista de campos a omitir torna mensurável a taxa de alucinação: qualquer valor extraído para esses campos é, por construção, indevido. As narrativas foram redigidas pelos próprios autores, seguindo os roteiros; as do conjunto de teste só foram escritas depois de congelada a versão final do \textit{prompt}, para que não pudessem influenciar o seu ajuste. Por conhecerem o gabarito, os autores tendem a produzir relatos mais organizados do que os de um acadêmico durante a consulta, o que é uma limitação da base.
 
 Os casos foram divididos, por sorteio, em um conjunto de ajuste (10 casos), usado para refinar os \textit{prompts}, e um conjunto de teste (30 casos), usado apenas na medição final.
 
 \subsection{Experimento A: qualidade da estruturação automática}
 \label{sec:exp-ia}
 
-Os casos de teste são processados por \todo{dois ou três} modelos de linguagem, cada um em duas estratégias (ficha inteira e extração por seção), restritas às seções que admitem ditado: queixa principal, história médica, história odontológica, prótese e observações. Cada campo extraído é comparado ao gabarito e classificado como verdadeiro positivo ($VP$, valor correto), falso positivo ($FP$, valor em campo vazio no gabarito), falso negativo ($FN$, campo com valor deixado vazio), verdadeiro negativo ou erro de valor ($EV$, campo preenchido com valor diferente do gabarito). Como é usual em extração de informação, o erro de valor conta simultaneamente como falso positivo e falso negativo:
+Os 30 casos de teste são processados pelo modelo de referência, o \texttt{qwen2.5:3b}, em duas estratégias (ficha inteira e extração por seção), restritas às seções que admitem ditado: queixa principal, história médica, história odontológica, prótese e observações. Cada campo extraído é comparado ao gabarito e classificado como verdadeiro positivo ($VP$, valor correto), falso positivo ($FP$, valor em campo vazio no gabarito), falso negativo ($FN$, campo com valor deixado vazio), verdadeiro negativo ou erro de valor ($EV$, campo preenchido com valor diferente do gabarito). Como é usual em extração de informação, o erro de valor conta simultaneamente como falso positivo e falso negativo:
 
 \begin{equation}
 	P = \frac{VP}{VP+FP+EV}, \qquad R = \frac{VP}{VP+FN+EV}, \qquad F_1 = \frac{2PR}{P+R}.
 \end{equation}
 
-Campos categóricos, booleanos e numéricos são comparados por igualdade exata; listas, como conjuntos. Campos de texto livre recebem uma medida automática aproximada, o $F_1$ entre os conjuntos de palavras do valor extraído e do gabarito, sendo considerados corretos a partir de 0,5; a medida definitiva, porém, é a avaliação por dois avaliadores em escala de 0 (inadequado) a 2 (adequado), a partir de uma planilha gerada automaticamente com os pares gabarito--valor extraído. A medida automática penaliza paráfrases corretas (``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''), razão pela qual o $F_1$ é informado também separadamente para os campos fechados, de comparação exata, e para os campos de texto. Todas as métricas são calculadas em dois momentos: sobre a saída \emph{bruta} do modelo e sobre a saída \emph{após as salvaguardas}, o que permite quantificar o efeito das verificações determinísticas. O experimento é executado por um \textit{script} que grava cada execução assim que termina, de modo que uma interrupção não perde as execuções concluídas. Além disso, medem-se:
+Campos categóricos, booleanos e numéricos são comparados por igualdade exata; listas, como conjuntos. Campos de texto livre recebem uma medida automática aproximada, o $F_1$ entre os conjuntos de palavras do valor extraído e do gabarito, sendo considerados corretos a partir de 0,5; a avaliação por dois avaliadores humanos, em escala de 0 (inadequado) a 2 (adequado), a partir de uma planilha gerada automaticamente com os pares gabarito--valor extraído, não pôde ser feita no prazo do trabalho e fica como complemento. A medida automática penaliza paráfrases corretas (``Não bebe, não fuma e não usa drogas'' diante de ``Nega álcool, drogas e cigarro''), razão pela qual o $F_1$ é informado também separadamente para os campos fechados, de comparação exata, e para os campos de texto. Todas as métricas são calculadas em dois momentos: sobre a saída \emph{bruta} do modelo e sobre a saída \emph{após as salvaguardas}, o que permite quantificar o efeito das verificações determinísticas. O experimento é executado por um \textit{script} que grava cada execução assim que termina, de modo que uma interrupção não perde as execuções concluídas. Cada caso é processado uma vez por estratégia: com temperatura zero e semente fixa, a saída do modelo é determinística no mesmo ambiente. Além disso, medem-se:
 
 \begin{itemize}
-	\item \textbf{taxa de alucinação}: proporção de campos preenchidos pelo modelo cujo valor no gabarito é nulo;
-	\item \textbf{taxa de omissão}: proporção de campos com valor no gabarito deixados nulos pelo modelo;
+	\item \textbf{taxa de alucinação}: proporção dos campos vazios no gabarito que o modelo preencheu, isto é, $FP/(FP+VN)$;
+	\item \textbf{taxa de omissão}: proporção dos campos com valor no gabarito que o modelo deixou vazios, $FN/(VP+FN+EV)$;
 	\item \textbf{validade estrutural}: proporção de respostas que respeitam o esquema;
-	\item \textbf{latência} por caso, em CPU e em GPU;
-	\item \textbf{reprodutibilidade}: concordância entre três execuções do mesmo caso.
+	\item \textbf{latência} por caso, em CPU, no computador de desenvolvimento.
 \end{itemize}
 
 \subsection{Experimento B: captação por áudio versus texto}
 \label{sec:exp-audio}
 
-\todo{15 a 20} narrativas do conjunto de teste são lidas e gravadas por voluntários em duas condições acústicas: ambiente silencioso e ambiente com ruído de clínica (ruído gravado na própria clínica e sobreposto ao áudio). As gravações são transcritas por modelos Whisper de diferentes tamanhos. A qualidade da transcrição é medida pela taxa de erro de palavras
+O experimento previa a gravação das narrativas por voluntários, em ambiente silencioso e com ruído gravado na clínica. Como não houve voluntários nem gravação da clínica no prazo do trabalho, o áudio foi produzido por síntese de fala, com a voz em português do Brasil do Windows (Microsoft Maria), a partir das 30 narrativas do conjunto de teste. A condição ruidosa foi simulada pela sobreposição de ruído rosa, cuja energia se concentra nas frequências baixas, com relação sinal-ruído de 10~dB, gerado com semente fixa. As duas substituições tornam o experimento mais favorável do que a situação real: a voz sintética é mais regular que a fala espontânea, e o ruído rosa não reproduz os sons intermitentes de uma clínica, como o motor de alta rotação.
+
+Os áudios são transcritos pelo modelo \texttt{small} do Whisper, o usado pelo sistema, com as mesmas opções do serviço de transcrição (idioma português, vocabulário clínico inicial e filtro de atividade de voz). A qualidade da transcrição é medida pela taxa de erro de palavras
 
 \begin{equation}
 	\mathrm{WER} = \frac{S + D + I}{N},
 \end{equation}
 
-\noindent em que $S$, $D$ e $I$ são, respectivamente, as substituições, remoções e inserções necessárias para transformar a transcrição no texto de referência e $N$ é o número de palavras da referência. A WER é calculada também apenas sobre os termos clínicos. Em seguida, as transcrições passam pelo Experimento~A, e a diferença de $F_1$ entre a extração a partir da transcrição e a partir do texto original quantifica a perda introduzida pelo áudio. Registra-se ainda o tempo de fala em comparação com o tempo de digitação do mesmo conteúdo.
+\noindent em que $S$, $D$ e $I$ são, respectivamente, as substituições, remoções e inserções necessárias para transformar a transcrição no texto de referência e $N$ é o número de palavras da referência. Antes da comparação, os dois textos são normalizados: letras minúsculas, sem pontuação e com os números escritos por extenso, para que ``2015'' e ``dois mil e quinze'' não contem como erro. Registra-se também o fator de tempo real, a razão entre o tempo de transcrição e a duração do áudio. Por fim, as transcrições da condição silenciosa de 10 casos de teste passam pelo Experimento~A, com a estratégia de ficha inteira, e a diferença de $F_1$ em relação à extração a partir do texto original dos mesmos casos quantifica a perda introduzida pelo áudio. O número de casos dessa etapa foi limitado pelo tempo de processamento em CPU, de dois a três minutos por caso.
 
 \subsection{Experimento C: usabilidade e eficiência}
 \label{sec:exp-usabilidade}
 
+O teste de usabilidade com membros da Liga, em que acadêmicos registrariam casos simulados em papel, no formulário digital e no formulário com ditado, depende da disponibilidade dos participantes e da aprovação prévia do Comitê de Ética em Pesquisa, e não coube no prazo deste trabalho. A usabilidade foi avaliada, por isso, com três métodos que dispensam participantes. O protocolo com usuários permanece descrito no Apêndice~\ref{apendice:usabilidade}, como trabalho futuro. Os três métodos são os seguintes.
+
 \begin{itemize}
-	\item \textbf{Participantes}: \todo{8 a 12} acadêmicos da LORD-UEPG e \todo{2 ou 3} professores, estes para o fluxo de revisão. Critério de inclusão: ser membro ativo e já ter preenchido a ficha em papel. Critério de exclusão: ter participado do desenvolvimento do sistema. O tamanho da amostra baseia-se na evidência de que poucos usuários revelam a maior parte dos problemas de usabilidade \cite{nielsen1993}.
-	\item \textbf{Desenho}: intrassujeitos. Cada participante registra três casos simulados, apresentados por roteiro gravado ou por um colega no papel de paciente, em três condições: ficha em papel, formulário digital e formulário digital com ditado e IA. A ordem das condições é contrabalanceada por quadrado latino, e os casos têm complexidade equivalente.
-	\item \textbf{Instrumentos}: cronometragem por ficha; comparação com o gabarito para medir completude e erros; questionário SUS \cite{brooke1996}; NASA-TLX \cite{hart1988}; entrevista semiestruturada curta (Apêndice~\ref{apendice:usabilidade}).
-	\item \textbf{Indicadores}: tempo de preenchimento, completude, número de erros, escore SUS, carga de trabalho, taxa de aceitação das sugestões da IA e problemas de usabilidade classificados por severidade.
-	\item \textbf{Análise}: teste de Friedman com comparações de Wilcoxon a posteriori, adequados a amostras pequenas; escore SUS médio com intervalo de confiança, interpretado segundo \citeonline{bangor2008}; categorização das respostas abertas.
+	\item \textbf{Auditoria automática de acessibilidade}: o motor axe-core \cite{axe}, versão 4.13, executado pelo Playwright, verifica as regras correspondentes aos critérios de sucesso de níveis A e AA das WCAG 2.1 \cite{wcag21}. São auditadas dez telas, nos temas claro e escuro: acesso, lista de pacientes, tela do paciente, quatro seções da ficha (queixa principal, questionário de dor, exame clínico com o mapa de palpação e odontograma), evolução do paciente, fila de revisão e painel da coorte. A auditoria roda como teste automatizado e falha diante de qualquer violação grave ou crítica. Ferramentas automáticas detectam apenas parte dos problemas de acessibilidade, como contraste, estrutura e nomes acessíveis dos controles, e não substituem a verificação manual nem o teste com usuários.
+	\item \textbf{Estimativa do tempo de preenchimento pelo \textit{Keystroke-Level Model} (KLM)} \cite{card1980}: o tempo de uma tarefa é estimado pela soma dos operadores elementares que ela exige, com os valores do artigo original: $K = 0{,}28$~s (tecla ou clique, digitador médio), $P = 1{,}10$~s (apontar com o mouse), $H = 0{,}40$~s (levar a mão do mouse ao teclado ou de volta) e $M = 1{,}35$~s (preparação mental). Cada campo é modelado conforme o controle que a interface gera a partir do esquema. Escolhas, respostas sim/não, escalas de 0 a 10 e a tabela de palpação custam $M + P + K$; as múltiplas escolhas custam $M$ mais $P + K$ por opção marcada; e os campos de número ou texto custam $M + P + K + 2H$ mais $K$ por caractere. Estimam-se (i) o preenchimento da ficha inicial completa pelo formulário, com os valores da ficha de exemplo, e (ii) nas seções que admitem ditado, para os 30 casos de teste, a digitação dos valores do gabarito em comparação com a revisão das sugestões produzidas no Experimento~A. Na revisão, aceitar ou rejeitar uma sugestão custa $M + P + K$; um valor errado custa a rejeição mais a digitação do valor correto; um campo omitido custa a sua digitação; e iniciar, encerrar e enviar o ditado são três ações adicionais. O tempo de fala e a espera pelo modelo não fazem parte do KLM e são relatados à parte. A estimativa é determinística, calculada por um \textit{script}, e pressupõe um usuário experiente, que já sabe o que registrar e não comete erros.
+	\item \textbf{Avaliação heurística} \cite{nielsen1990}: as telas foram inspecionadas segundo as dez heurísticas de \citeonline{nielsen1994}, e cada problema encontrado recebeu uma severidade na escala de 0 (não é problema) a 4 (catástrofe de usabilidade) \cite{nielsenmack1994}. A inspeção foi feita pelos próprios autores, o que é uma limitação: o método recomenda avaliadores independentes, e quem desenvolveu a interface tende a não enxergar parte dos seus problemas.
 \end{itemize}
 
 \subsection{Experimento D: validação do pipeline analítico}
@@ -419,19 +420,19 @@ A coorte é carregada no banco pela própria API e analisada a partir das visõe
 \label{sec:exp-tecnica}
 
 \begin{itemize}
-	\item \textbf{Desempenho da persistência}: o odontograma e o mapa de palpação de \todo{1.000 e 10.000} pacientes sintéticos são armazenados no modelo híbrido (\texttt{JSONB}) e em um modelo totalmente normalizado; comparam-se o tempo de leitura do prontuário completo (\texttt{EXPLAIN ANALYZE}), o tempo de escrita e o espaço em disco;
-	\item \textbf{Segurança}: varredura com o OWASP ZAP \cite{zap} antes e depois das correções e testes automatizados que verificam que cada papel não acessa recursos não autorizados;
-	\item \textbf{Qualidade do código}: cobertura dos testes unitários e de ponta a ponta executados em integração contínua.
+	\item \textbf{Desempenho da persistência}: o odontograma e o mapa de palpação de 1.000 e de 10.000 pacientes sintéticos, com três atendimentos cada, são armazenados no modelo híbrido (\texttt{JSONB}) e em um modelo totalmente normalizado, em que a palpação e o odontograma ocupam tabelas relacionais próprias (dente, condição e face); o restante da ficha é guardado da mesma forma nos dois. Comparam-se o tempo de leitura do prontuário completo de um paciente, medido no servidor pelo \texttt{EXPLAIN ANALYZE}, o tempo de gravação de um atendimento completo em uma transação, o tempo de uma consulta analítica sobre todas as fichas (quantas registram dor igual ou maior que 2 na palpação do corpo do masseter direito) e o espaço em disco, incluindo índices. A leitura e a gravação são repetidas 300 vezes em cada modelo, com pacientes sorteados e as medições dos dois modelos intercaladas, em ordem alternada, para que variações de carga da máquina os afetem igualmente; relatam-se a mediana e o percentil 95. O experimento roda em um PostgreSQL~17 temporário, no computador de desenvolvimento, e o gerador usa semente fixa;
+	\item \textbf{Segurança}: revisão orientada pelas categorias do OWASP Top 10 \cite{owasp-top10} mais relevantes para o sistema: controle de acesso, injeção, configuração, autenticação e componentes vulneráveis. A revisão combina testes automatizados de ataque contra a API (requisições sem sessão ou com sessão forjada, injeção de SQL e de HTML, acesso a objetos de outro usuário, identificadores malformados e corpos acima do limite), a verificação dos cabeçalhos de segurança e da política de segurança de conteúdo (CSP) na versão compilada da interface, e a auditoria das dependências JavaScript e Python contra as bases públicas de vulnerabilidades (\texttt{npm audit} e \texttt{pip-audit}). A varredura dinâmica com o OWASP ZAP \cite{zap}, prevista inicialmente, depende do sistema implantado no servidor da instituição e fica para a etapa de implantação;
+	\item \textbf{Qualidade do código}: testes unitários, de integração e de ponta a ponta, executados a cada alteração no ambiente de desenvolvimento.
 \end{itemize}
 
 \section{Aspectos éticos}
 \label{sec:etica}
 
-O Experimento~C envolve participantes humanos (acadêmicos e professores) e, por isso, \todo{foi submetido ao Comitê de Ética em Pesquisa da UEPG por meio da Plataforma Brasil, CAAE n.º ...}, observadas as Resoluções CNS n.º 466/2012 e 510/2016 \cite{cns466-2012,cns510-2016}. Os participantes assinam termo de consentimento próprio e suas respostas são analisadas de forma anônima. Nenhum dado real de paciente é utilizado nos experimentos A, B e D. O uso futuro do ditado em atendimentos reais exige termo de consentimento adicional para gravação de áudio, uma vez que o TCLE vigente não contempla essa finalidade.
+Nenhum experimento deste trabalho envolve participantes humanos nem dados reais de pacientes: os casos clínicos, as narrativas e a coorte são sintéticos, e a avaliação de usabilidade foi feita sem participantes. Por isso, não houve submissão ao Comitê de Ética em Pesquisa. O teste com usuários descrito no Apêndice~\ref{apendice:usabilidade} só poderá ser realizado depois de aprovado pelo Comitê de Ética em Pesquisa da UEPG, por meio da Plataforma Brasil, observadas as Resoluções CNS n.º 466/2012 e 510/2016 \cite{cns466-2012,cns510-2016}, com termo de consentimento próprio para os participantes. O uso futuro do ditado em atendimentos reais exige termo de consentimento adicional para gravação de áudio, uma vez que o TCLE vigente não contempla essa finalidade.
 
 \section{Cronograma}
 
-As atividades previstas estão na \autoref{tb:cronograma}.
+O desenvolvimento do sistema e parte dos experimentos foram concluídos antes do previsto. A \autoref{tb:cronograma} registra as etapas concluídas e as restantes, considerando a defesa no início de dezembro de 2026.
 
 \begin{table}[htbp]
 	\caption{Cronograma de atividades (2026)}
@@ -440,15 +441,12 @@ As atividades previstas estão na \autoref{tb:cronograma}.
 	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
 		\hline
 		\textbf{Período} & \textbf{Atividades} \\ \hline
-		28/09 a 04/10 & Reunião com a LORD; submissão ao CEP; ambiente de desenvolvimento; esquema JSON da ficha (versão 1) \\ \hline
-		05/10 a 18/10 & API (autenticação, papéis, pacientes, atendimentos, fichas, auditoria); formulários gerados pelo esquema; odontograma e mapa de palpação; fluxo de revisão \\ \hline
-		19/10 a 01/11 & Serviço de IA e tela de revisão das sugestões; base de casos sintéticos; Experimento A \\ \hline
-		02/11 a 08/11 & Gravações e Experimento B; serviço analítico, coorte sintética e painéis (Experimento D) \\ \hline
-		09/11 a 15/11 & Experimento C; avaliação técnica; implantação no servidor da UEPG \\ \hline
-		16/11 a 29/11 & Redação dos resultados e da discussão; revisão geral e normalização \\ \hline
-		30/11 a 06/12 & Correções finais e preparação da defesa \\ \hline
+		Até 24/09 (concluído) & Esquema da ficha; API, banco e segurança; interface; módulos de IA e analítico; casos e coorte sintéticos; Experimento~A com o \texttt{qwen2.5:3b}; Experimento~C sem participantes; Experimento~D; avaliação técnica \\ \hline
+		28/09 a 11/10 & Experimento~A com um segundo modelo e medição dedicada da latência; Experimento~B \\ \hline
+		12/10 a 25/10 & Discussão, conclusão e resumo; revisão das referências \\ \hline
+		26/10 a 08/11 & Revisão pelo orientador e correções; apresentação do sistema à Liga (ficha de retorno e matriz de acesso) \\ \hline
+		09/11 a 22/11 & Implantação no servidor da UEPG, se liberado, com a varredura do OWASP ZAP \\ \hline
+		23/11 a 06/12 & Versão final, entrega e preparação da defesa \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}
 \end{table}
-
-\todo{ajustar o cronograma à data da defesa.}
