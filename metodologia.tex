@@ -135,28 +135,7 @@ A decisão central da modelagem é descrever a ficha clínica \emph{uma única v
 
 \subsection{Modelo híbrido relacional e documental}
 
-Informações de estrutura estável, que se relacionam entre si, como usuários, pacientes, atendimentos, consentimentos e tratamentos, ficam em tabelas tradicionais. O conteúdo da ficha, o odontograma e o mapa de palpação, que têm muitos campos e podem mudar com novas versões da ficha, ficam guardados como documentos dentro dessas tabelas (colunas \texttt{JSONB}), conforme a justificativa da \autoref{sec:jsonb}. O \autoref{qua:tabelas} descreve as principais tabelas, e a \autoref{fig:der} apresenta o diagrama entidade-relacionamento.
-
-\begin{quadro}[htbp]
-	\caption{Principais tabelas do banco de dados}
-	\label{qua:tabelas}
-	\footnotesize
-	\begin{tabularx}{\textwidth}{|L{3cm}|Y|}
-		\hline
-		\textbf{Tabela} & \textbf{Conteúdo} \\ \hline
-		\texttt{usuario} & Nome, e-mail, senha armazenada de forma irreversível (Argon2id), papel e situação (ativo ou bloqueado) \\ \hline
-		\texttt{sessao} & Sessões de acesso abertas: usuário e validade \\ \hline
-		\texttt{paciente} & Número do prontuário, nome, data de nascimento, sexo; CPF, RG, telefones e endereço cifrados \\ \hline
-		\texttt{consentimento} & Tipo (TCLE, gravação de áudio ou pesquisa), versão do termo, data do aceite e quem o registrou \\ \hline
-		\texttt{atendimento} & Paciente, data, tipo (primeira consulta ou retorno), aluno e professor \\ \hline
-		\texttt{ficha} & Atendimento, tipo de ficha, versão do esquema, conteúdo (\texttt{JSONB}), situação (rascunho, em revisão ou aprovada), completude, autor e aprovador; versões anteriores, no caso de adendos \\ \hline
-		\texttt{odontograma} & Atendimento e estado de cada dente e face (\texttt{JSONB}) \\ \hline
-		\texttt{tratamento} & Paciente, categoria padronizada (placa oclusal, fisioterapia, farmacológico, prótese etc.), início e fim \\ \hline
-		\texttt{sugestao\_ia} & Origem (texto ou áudio), transcrição, modelo, versão das instruções, resposta do modelo, tempo de resposta e decisão humana por campo \\ \hline
-		\texttt{auditoria} & Usuário, ação, registro afetado, detalhes sem dados pessoais, endereço IP e data; só aceita novos registros \\ \hline
-	\end{tabularx}
-	\fonte{Os autores (2026).}
-\end{quadro}
+Informações de estrutura estável, que se relacionam entre si, como usuários, pacientes, atendimentos, consentimentos e tratamentos, ficam em tabelas tradicionais. O conteúdo da ficha, o odontograma e o mapa de palpação, que têm muitos campos e podem mudar com novas versões da ficha, ficam guardados como documentos dentro dessas tabelas (colunas \texttt{JSONB}), conforme a justificativa da \autoref{sec:jsonb}. A \autoref{fig:der} apresenta o diagrama entidade-relacionamento, com as tabelas e suas colunas.
 
 \begin{figure}[htbp]
 	\caption{Diagrama entidade-relacionamento}
@@ -166,17 +145,7 @@ Informações de estrutura estável, que se relacionam entre si, como usuários,
 	\fonte{Os autores (2026). Chave primária sublinhada; chave estrangeira em itálico. Para legibilidade, foram omitidas as referências de autoria a \texttt{usuario} (\texttt{criado\_por}, \texttt{registrado\_por}, \texttt{preenchido\_por}, \texttt{aprovado\_por}) e o esquema pseudonimizado, formado apenas por visões.}
 \end{figure}
 
-As medidas mais consultadas, como as escalas de dor e a abertura bucal, são copiadas automaticamente do documento para colunas próprias, que o banco mantém sempre atualizadas (colunas geradas), conforme o \autoref{cod:coluna-gerada}. Assim, elas podem ser pesquisadas rapidamente sem que ninguém precise copiá-las à mão, e o documento continua sendo a única fonte da informação.
-
-\begin{lstlisting}[caption={Coluna gerada a partir do documento da ficha}, language=SQL, label=cod:coluna-gerada]
--- dor atual (questão 16): a ficha inicial e a de retorno
--- guardam a mesma medida em seções diferentes
-dor_atual smallint GENERATED ALWAYS AS (
-  coalesce(dados #>> '{questionario_dtm,q16_dor_atual}',
-           dados #>> '{dor,q16_dor_atual}')::smallint) STORED,
-
-CREATE INDEX ficha_dor_atual_idx ON ficha (dor_atual);
-\end{lstlisting}
+As medidas mais consultadas, como as escalas de dor e a abertura bucal, são copiadas automaticamente do documento para colunas próprias, que o banco mantém sempre atualizadas (colunas geradas). Assim, elas podem ser pesquisadas rapidamente sem que ninguém precise copiá-las à mão, e o documento continua sendo a única fonte da informação.
 
 A escolha entre o modelo híbrido e a normalização completa é avaliada experimentalmente (\autoref{sec:exp-tecnica}).
 
@@ -258,23 +227,7 @@ Essas verificações foram refinadas da mesma forma que as instruções do model
 
 Os valores descartados não são gravados na ficha, mas são exibidos ao acadêmico, com o motivo, em uma lista recolhida da tela de revisão. As verificações não substituem a revisão humana: um valor apoiado em evidência verdadeira, porém mal classificado, continua a depender do acadêmico para ser rejeitado.
 
-As instruções do modelo têm versões numeradas, e a versão usada fica registrada em cada sugestão. Os ajustes do \textit{prompt} foram feitos exclusivamente com relatos de desenvolvimento escritos pelos autores para casos do conjunto de ajuste (\autoref{sec:casos}), nunca com casos de teste. O \autoref{qd:versoes-prompt} resume as versões e o problema observado que motivou cada uma.
-
-\begin{quadro}[htbp]
-	\caption{Versões do \textit{prompt} de estruturação}
-	\label{qd:versoes-prompt}
-	\centering
-	\small
-	\begin{tabularx}{\textwidth}{|L{1.2cm}|Y|Y|}
-		\hline
-		\textbf{Versão} & \textbf{Problema observado} & \textbf{Alteração} \\ \hline
-		v1 & --- & Regras gerais: não diagnosticar, não deduzir, evidência literal, negações explícitas, somente códigos listados, ignorar comentários irrelevantes \\ \hline
-		v2 & O modelo marcou ``respiratória'' a partir do uso de losartana e repetiu a mesma informação em dois campos & Proibição de deduzir doenças a partir de medicamentos; cada informação em um único campo; exemplo resolvido com outro paciente \\ \hline
-		v3 & O modelo copiou o título do campo e o rótulo ``Valor:'' do guia para dentro do valor & Guia reescrito com rótulos que não se confundem com conteúdo; regra explícita de que o valor contém apenas a informação do paciente \\ \hline
-		v4 & O modelo citou o título do campo como evidência (``Tipo de escova'') ou embrulhou a citação (``Relato do acadêmico: `...' '') & Regra da evidência passa a proibir aspas, prefixos e o uso do título ou da pergunta do campo \\ \hline
-	\end{tabularx}
-	\fonte{Os autores (2026).}
-\end{quadro}
+As instruções do modelo têm versões numeradas, e a versão usada fica registrada em cada sugestão. Os ajustes foram feitos exclusivamente com relatos de desenvolvimento escritos pelos autores para casos do conjunto de ajuste (\autoref{sec:casos}), nunca com casos de teste. Foram quatro versões, cada uma motivada por um erro observado: deduzir doenças a partir de medicamentos (``respiratória'' a partir do uso de losartana), repetir a mesma informação em dois campos, copiar o título do campo para dentro do valor e citar o título do campo, em vez do relato, como evidência.
 
 As salvaguardas que asseguram a ausência de finalidade diagnóstica são implementadas no código, e não apenas declaradas:
 
@@ -431,21 +384,3 @@ A coorte é carregada no banco pela própria API e analisada a partir das visõe
 
 Nenhum experimento deste trabalho envolve participantes humanos nem dados reais de pacientes: os casos clínicos, as narrativas e a coorte são sintéticos, e a avaliação de usabilidade foi feita sem participantes. Por isso, não houve submissão ao Comitê de Ética em Pesquisa. O teste com usuários descrito no Apêndice~\ref{apendice:usabilidade} só poderá ser realizado depois de aprovado pelo Comitê de Ética em Pesquisa da UEPG, por meio da Plataforma Brasil, observadas as Resoluções CNS n.º 466/2012 e 510/2016 \cite{cns466-2012,cns510-2016}, com termo de consentimento próprio para os participantes. O uso futuro do ditado em atendimentos reais exige termo de consentimento adicional para gravação de áudio, uma vez que o TCLE vigente não contempla essa finalidade.
 
-\section{Cronograma}
-
-O desenvolvimento do sistema e parte dos experimentos foram concluídos antes do previsto. A \autoref{tb:cronograma} registra as etapas concluídas e as restantes, considerando a defesa no início de dezembro de 2026.
-
-\begin{table}[htbp]
-	\caption{Cronograma de atividades (2026)}
-	\label{tb:cronograma}
-	\footnotesize
-	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
-		\hline
-		\textbf{Período} & \textbf{Atividades} \\ \hline
-		Até 24/09 (concluído) & Esquema da ficha; API, banco e segurança; interface; módulos de IA e analítico; casos e coorte sintéticos; Experimentos~A, B, C e D; avaliação técnica; implantação de demonstração em nuvem e varreduras do OWASP ZAP; redação completa do texto \\ \hline
-		28/09 a 25/10 & Revisão pelo orientador e correções; apresentação do sistema à Liga (ficha de retorno e matriz de acesso) \\ \hline
-		26/10 a 22/11 & Implantação no servidor da UEPG, se liberado \\ \hline
-		23/11 a 06/12 & Versão final, entrega e preparação da defesa \\ \hline
-	\end{tabularx}
-	\fonte{Os autores (2026).}
-\end{table}

@@ -38,7 +38,7 @@ A tela do paciente (\autoref{fig:tela-paciente}) reúne os atendimentos, com o s
 	\caption{Tela do paciente}
 	\label{fig:tela-paciente}
 	\centering
-	\includegraphics[width=\textwidth]{figuras/03-paciente}
+	\includegraphics[width=0.85\textwidth]{figuras/03-paciente}
 	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
@@ -48,7 +48,7 @@ O editor da ficha (\autoref{fig:tela-anamnese}) é gerado inteiramente a partir 
 	\caption{Editor da ficha: seção de história médica}
 	\label{fig:tela-anamnese}
 	\centering
-	\includegraphics[width=\textwidth]{figuras/04-ficha-historia-medica}
+	\includegraphics[width=0.85\textwidth]{figuras/04-ficha-historia-medica}
 	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
@@ -58,33 +58,18 @@ A palpação muscular e articular (questões 43 a 45) é registrada em um mapa f
 	\caption{Mapa de palpação muscular e articular}
 	\label{fig:tela-palpacao}
 	\centering
-	\includegraphics[width=\textwidth]{figuras/06-mapa-palpacao}
+	\includegraphics[width=0.8\textwidth]{figuras/06-mapa-palpacao}
 	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 \begin{figure}[htbp]
 	\caption{Odontograma com marcações de exemplo}
 	\label{fig:tela-odontograma}
 	\centering
-	\includegraphics[width=\textwidth]{figuras/08-odontograma}
+	\includegraphics[width=0.8\textwidth]{figuras/08-odontograma}
 	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
-As seções de decisão clínica são identificadas na navegação e no cabeçalho da seção como exclusivas do examinador (\autoref{fig:tela-diagnostico}), reforçando para o usuário a restrição que o esquema impõe ao módulo de IA. O professor acompanha as fichas enviadas pelos alunos em uma fila de revisão (\autoref{fig:tela-revisao}) e, ao abrir cada uma, pode devolvê-la com um comentário ou aprová-la (RF05). Após a aprovação, a ficha é exibida somente para leitura, com a opção de registrar um adendo (RF06).
-
-\begin{figure}[htbp]
-	\caption{Seção de diagnóstico, exclusiva do examinador}
-	\label{fig:tela-diagnostico}
-	\centering
-	\includegraphics[width=\textwidth]{figuras/07-diagnostico-somente-humano}
-	\fonte{Os autores (2026), com dados sintéticos.}
-\end{figure}
-\begin{figure}[htbp]
-	\caption{Fila de revisão do professor}
-	\label{fig:tela-revisao}
-	\centering
-	\includegraphics[width=\textwidth]{figuras/09-fila-revisao}
-	\fonte{Os autores (2026), com dados sintéticos.}
-\end{figure}
+As seções de decisão clínica são identificadas na navegação e no cabeçalho da seção como exclusivas do examinador, reforçando para o usuário a restrição que o esquema impõe ao módulo de IA. O professor acompanha as fichas enviadas pelos alunos em uma fila de revisão e, ao abrir cada uma, pode devolvê-la com um comentário ou aprová-la (RF05). Após a aprovação, a ficha é exibida somente para leitura, com a opção de registrar um adendo (RF06).
 
 Nas seções que admitem ditado, a ficha exibe o painel ``Ditado com IA'' (\autoref{fig:tela-revisao-ia}). O acadêmico grava o relato, que é transcrito e pode ser corrigido antes do envio, ou digita o texto diretamente. As sugestões aparecem com o rótulo do campo, o valor proposto e, entre aspas, o trecho do relato que o justifica. Cada sugestão pode ser aceita ou rejeitada; ao aceitar, o valor é aplicado ao formulário, onde pode ser corrigido, e a decisão passa a constar como ``aceita e editada''. Quando a sugestão substituiria um valor já preenchido, o painel avisa e mostra o valor atual. Os valores descartados pelas salvaguardas ficam em uma lista recolhida, com o motivo do descarte. O painel não aparece nas seções exclusivamente humanas nem em fichas enviadas para revisão ou aprovadas.
 
@@ -92,7 +77,7 @@ Nas seções que admitem ditado, a ficha exibe o painel ``Ditado com IA'' (\auto
 	\caption{Revisão das sugestões da IA com o trecho de evidência}
 	\label{fig:tela-revisao-ia}
 	\centering
-	\includegraphics[width=0.85\textwidth]{figuras/11-revisao-ia}
+	\includegraphics[width=0.7\textwidth]{figuras/11-revisao-ia}
 	\fonte{Os autores (2026), com relato sintético e o modelo \texttt{qwen2.5:3b} (\textit{prompt} v4).}
 \end{figure}
 
@@ -106,7 +91,7 @@ A tela do paciente passou a exibir a evolução clínica calculada a partir das 
 	\caption{Painel de evolução clínica do paciente}
 	\label{fig:tela-painel}
 	\centering
-	\includegraphics[width=\textwidth]{figuras/12-evolucao-paciente}
+	\includegraphics[width=0.85\textwidth]{figuras/12-evolucao-paciente}
 	\fonte{Os autores (2026), com um paciente da coorte sintética.}
 \end{figure}
 
@@ -116,7 +101,7 @@ O administrador gerencia os usuários e consulta a trilha de auditoria (\autoref
 	\caption{Trilha de auditoria vista pelo administrador, no tema escuro}
 	\label{fig:tela-auditoria}
 	\centering
-	\includegraphics[width=\textwidth]{figuras/17-auditoria-escuro}
+	\includegraphics[width=0.85\textwidth]{figuras/17-auditoria-escuro}
 	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
@@ -126,7 +111,7 @@ A interface foi verificada também na largura de um \textit{tablet} na vertical,
 	\caption{Exame clínico da ficha na largura de um \textit{tablet} (768 pixels)}
 	\label{fig:tela-tablet}
 	\centering
-	\includegraphics[width=0.6\textwidth]{figuras/18-ficha-tablet}
+	\includegraphics[width=0.5\textwidth]{figuras/18-ficha-tablet}
 	\fonte{Os autores (2026), com dados sintéticos.}
 \end{figure}
 
@@ -145,11 +130,11 @@ O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:
 		RF02 & Atendido & Cadastro e busca por nome, prontuário ou CPF, sem guardar o CPF legível; consentimentos de TCLE, gravação de áudio e pesquisa (\autoref{fig:tela-paciente}) \\ \hline
 		RF03 & Atendido & Fichas inicial e de retorno geradas a partir dos esquemas JSON (\autoref{fig:tela-anamnese}) \\ \hline
 		RF04 & Atendido & Odontograma na notação FDI e mapa de palpação com tabela equivalente (Figuras~\ref{fig:tela-palpacao} e~\ref{fig:tela-odontograma}) \\ \hline
-		RF05 & Atendido & Fila de revisão, devolução com comentário e aprovação (\autoref{fig:tela-revisao}); fluxo testado de ponta a ponta \\ \hline
+		RF05 & Atendido & Fila de revisão, devolução com comentário e aprovação; fluxo testado de ponta a ponta \\ \hline
 		RF06 & Atendido & O próprio banco impede alterar ou excluir ficha aprovada, mesmo por quem tem acesso total a ele; correções por adendo \\ \hline
 		RF07 & Atendido & Transcrição local, sugestões com trecho de evidência e decisão individual por campo, sem aceite em lote (\autoref{fig:tela-revisao-ia}); Experimentos A e B \\ \hline
 		RF08 & Atendido & Painel de evolução com dor, abertura bucal, sítios dolorosos, GCPS, palpação por consulta e período de tratamento (\autoref{fig:tela-painel}) \\ \hline
-		RF09 & Atendido & Painel da coorte (\autoref{fig:painel-coorte}) e exportação em planilha, ambos só com dados pseudonimizados e registrados na auditoria \\ \hline
+		RF09 & Atendido & Painel da coorte (\autoref{sec:res-exp-d}) e exportação em planilha, ambos só com dados pseudonimizados e registrados na auditoria \\ \hline
 		RF10 & Atendido & Registro de leituras e alterações de pacientes, fichas, painéis e exportações, que não pode ser alterado nem apagado (\autoref{fig:tela-auditoria}) \\ \hline
 		RNF01 & Atendido & Dados pessoais cifrados, permissões conferidas também no banco, pseudonimização com chave separada e dados de análise sem texto livre; revisão de segurança \\ \hline
 		RNF02 & Parcial & Todos os serviços, inclusive os modelos de IA, executam no próprio servidor, sem chamadas externas; a implantação foi validada em nuvem, com dados sintéticos, mas não no servidor da UEPG \\ \hline
@@ -329,34 +314,7 @@ Na primeira execução, a auditoria automática apontou três violações de gra
 
 \subsection{Tempo estimado pelo KLM}
 
-A \autoref{tb:klm} apresenta a estimativa do tempo de preenchimento da ficha inicial pelo formulário, com os valores da ficha de exemplo. Os 120 campos preenchidos exigiriam cerca de 9,7~minutos de um usuário experiente, sem contar o cadastro do paciente e o odontograma. O texto livre concentra o tempo: as seis seções em que ele predomina (queixa principal, história médica, condição DTM, tecidos moles, condição periodontal e plano de tratamento) somam 251~s, ou 43\% do total, com apenas 18 dos 120 campos. Nas seções de respostas fechadas, cada campo custa cerca de 3~s, o que confirma a escolha do formulário para o questionário de dor e o exame clínico (\autoref{qua:ficha-captacao}).
-
-\begin{table}[htbp]
-	\caption{Tempo estimado pelo KLM para preencher a ficha inicial pelo formulário}
-	\label{tb:klm}
-	\footnotesize
-	\centering
-	\begin{tabular}{|l|c|c|}
-		\hline
-		\textbf{Seção} & \textbf{Campos preenchidos} & \textbf{Tempo (s)} \\ \hline
-		Queixa principal & 1 & 30,9 \\ \hline
-		História médica & 10 & 108,1 \\ \hline
-		História odontológica e hábitos & 7 & 23,2 \\ \hline
-		Questionário de dor e DTM & 23 & 70,4 \\ \hline
-		Condição DTM & 1 & 30,1 \\ \hline
-		Exame clínico de DTM (com a palpação) & 33 & 100,4 \\ \hline
-		Prótese & 1 & 5,5 \\ \hline
-		RDC/TMD: características relatadas & 7 & 21,8 \\ \hline
-		RDC/TMD Eixo I: diagnóstico & 5 & 16,4 \\ \hline
-		Exame extraoral & 12 & 43,6 \\ \hline
-		Exame intraoral & 14 & 47,0 \\ \hline
-		Variações de normalidade dos tecidos moles & 3 & 26,2 \\ \hline
-		Condição periodontal & 1 & 20,0 \\ \hline
-		Plano de tratamento & 2 & 35,9 \\ \hline
-		\textbf{Total} & \textbf{120} & \textbf{579,5 (9,7 min)} \\ \hline
-	\end{tabular}
-	\fonte{Os autores (2026). Inclui a troca de seção na navegação lateral; a seção de observações estava vazia na ficha de exemplo.}
-\end{table}
+O KLM estimou o tempo de preenchimento da ficha inicial pelo formulário, com os valores da ficha de exemplo. Os 120 campos preenchidos exigiriam cerca de 9,7~minutos de um usuário experiente, sem contar o cadastro do paciente e o odontograma. O texto livre concentra o tempo: as seis seções em que ele predomina (queixa principal, história médica, condição DTM, tecidos moles, condição periodontal e plano de tratamento) somam 251~s, ou 43\% do total, com apenas 18 dos 120 campos. Nas seções de respostas fechadas, cada campo custa cerca de 3~s, o que confirma a escolha do formulário para o questionário de dor e o exame clínico (\autoref{qua:ficha-captacao}).
 
 Na palpação, os 18 sítios da ficha de exemplo levariam 49~s pela tabela e 54~s pelo mapa, em que cada clique avança um grau da escala e a dor severa exige quatro cliques. A diferença é pequena, e a vantagem do mapa está na visão de conjunto da distribuição da dor, não na velocidade; quem preferir pode usar a tabela ao lado.
 
@@ -428,14 +386,6 @@ O grupo de orientações de autocuidado, com efeito sorteado de 4,8\%, não apre
 	\fonte{Os autores (2026).}
 \end{figure}
 
-A \autoref{fig:exp-d-trajetoria} mostra a forma programada das trajetórias: queda até o 90.º dia e estabilidade depois. A \autoref{fig:painel-coorte} mostra o mesmo resultado no painel da coorte do sistema, que apresenta ainda a prevalência das características relatadas, a distribuição dos diagnósticos do Eixo~I e as correlações na linha de base. Como as medidas da coorte sintética foram sorteadas de forma independente, as correlações de Spearman ficaram próximas de zero ($|\rho| \leq 0{,}15$), outro resultado coerente com a construção dos dados.
-
-\begin{figure}[htbp]
-	\caption{Painel da coorte no sistema, com a coorte sintética}
-	\label{fig:painel-coorte}
-	\centering
-	\includegraphics[width=\textwidth]{figuras/13-painel-coorte}
-	\fonte{Os autores (2026).}
-\end{figure}
+A \autoref{fig:exp-d-trajetoria} mostra a forma programada das trajetórias: queda até o 90.º dia e estabilidade depois. O painel da coorte do sistema mostra o mesmo resultado e apresenta ainda a prevalência das características relatadas, a distribuição dos diagnósticos do Eixo~I e as correlações na linha de base. Como as medidas da coorte sintética foram sorteadas de forma independente, as correlações de Spearman ficaram próximas de zero ($|\rho| \leq 0{,}15$), outro resultado coerente com a construção dos dados.
 
 Por construção, esses números validam o cálculo dos indicadores e dos testes, e não dizem nada sobre a eficácia real dos tratamentos da Liga.

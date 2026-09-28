@@ -52,28 +52,7 @@ O esquema completo está no repositório do sistema, em \texttt{packages/ficha/s
 }
 \end{lstlisting}
 
-O \autoref{cod:schema-ia} mostra o esquema derivado automaticamente para um campo da história médica, que é o formato enviado ao modelo de linguagem. A derivação resolve as referências, remove os metadados, mantém as instruções de preenchimento do próprio campo e exige, para cada campo, o valor e o trecho da transcrição que o justifica.
-
-\begin{lstlisting}[caption={Esquema derivado para a IA (campo de alergias)}, label=cod:schema-ia]
-"q3_alergias": {
-  "type": "object",
-  "additionalProperties": false,
-  "description": "Histórico de alergias",
-  "properties": {
-    "valor": {
-      "type": ["string", "null"],
-      "maxLength": 4000,
-      "description": "Registrar \"nega\" quando o paciente negar alergias."
-    },
-    "evidencia": {
-      "type": ["string", "null"],
-      "description": "Trecho literal da transcrição que justifica
-                      o valor; null se não mencionado."
-    }
-  },
-  "required": ["valor", "evidencia"]
-}
-\end{lstlisting}
+O esquema enviado ao modelo de linguagem é derivado automaticamente deste: as seções exclusivamente humanas são retiradas, e cada campo passa a exigir o valor e o trecho do relato que o justifica, no formato mostrado no \autoref{cod:saida-ia}.
 
 % ---------------------------------------------------------------------
 \chapter{Roteiro da avaliação de usabilidade}

@@ -73,13 +73,7 @@ A escolha da arquitetura de software é um fator crítico para a sustentabilidad
 
 Para lidar com a complexidade de um prontuário odontológico, que reúne dados de vários tipos (texto, opções, medidas e odontogramas), recomenda-se separar a interface que o usuário vê (\textit{front-end}) das regras e dos dados, que ficam no servidor (\textit{back-end}), que se comunicam por uma interface de programação (API). Essa separação divide o sistema em partes independentes e permite entregar tarefas especializadas, como a análise estatística e a execução dos modelos de IA, a serviços separados, sem deixar o atendimento lento.
 
-\subsection{Tecnologias aplicadas à saúde e análise de dados}
-
-O ecossistema JavaScript, frequentemente adotado em pilhas como a MERN (MongoDB, Express.js, React e Node.js), viabiliza sistemas responsivos e personalizados para prontuários eletrônicos \cite{singhal2025}. A uniformidade da linguagem entre as camadas facilita o fluxo de dados entre cliente e servidor \cite{singhal2025}.
-
-Na interface, formulários clínicos complexos, como odontogramas e mapas de dor, pedem uma construção em partes. A biblioteca React monta as telas a partir de componentes reutilizáveis e de fácil manutenção, e, bem utilizada, evita redesenhar a tela inteira a cada alteração, mesmo em formulários extensos \cite{parida2024}. No servidor, o Node.js consegue atender dezenas de usuários ao mesmo tempo com eficiência, porque não fica parado esperando o banco de dados responder a cada pedido \cite{parida2024}.
-
-Para que os dados transcendam o registro administrativo, o ecossistema científico do Python oferece as ferramentas necessárias para transformar registros de prontuário em indicadores. A biblioteca Pandas fornece estruturas de dados tabulares, com rótulos e tipos heterogêneos, para a transformação, a limpeza e a agregação dos dados \cite{mckinney2010}, e a biblioteca SciPy reúne as rotinas de estatística, como os testes não paramétricos, usadas na análise \cite{virtanen2020}.
+Pilhas de tecnologia como a MERN (MongoDB, Express, React e Node.js) têm sido empregadas em prontuários eletrônicos por usarem a mesma linguagem na interface e no servidor \cite{singhal2025}; o React favorece formulários extensos, montados a partir de componentes reutilizáveis, e o Node.js atende muitos usuários ao mesmo tempo com poucos recursos \cite{parida2024}. Para a análise, o ecossistema científico do Python oferece bibliotecas consolidadas para o tratamento de dados tabulares e a estatística \cite{mckinney2010,virtanen2020}. As tecnologias adotadas neste trabalho estão na \autoref{sec:tecnologias}.
 
 \subsection{Persistência híbrida: relacional e documental}
 \label{sec:jsonb}

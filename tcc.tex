@@ -101,6 +101,14 @@ brazil				% o último idioma é o principal do documento
 % espaço vertical nas células: sem ele, as linhas horizontais encostavam no texto das tabelas e quadros
 \setlength{\extrarowheight}{3pt}
 \renewcommand{\arraystretch}{1.15}
+% figuras e tabelas: permite juntá-las ao texto na mesma página, em vez de deixar páginas meio vazias
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
 
 % Nomes usados pelo \autoref para floats personalizados
 \providecommand{\quadroautorefname}{Quadro}
