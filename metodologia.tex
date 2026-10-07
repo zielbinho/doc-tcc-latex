@@ -135,15 +135,7 @@ A decisão central da modelagem é descrever a ficha clínica \emph{uma única v
 
 \subsection{Modelo híbrido relacional e documental}
 
-Informações de estrutura estável, que se relacionam entre si, como usuários, pacientes, atendimentos, consentimentos e tratamentos, ficam em tabelas tradicionais. O conteúdo da ficha, o odontograma e o mapa de palpação, que têm muitos campos e podem mudar com novas versões da ficha, ficam guardados como documentos dentro dessas tabelas (colunas \texttt{JSONB}), conforme a justificativa da \autoref{sec:jsonb}. A \autoref{fig:der} apresenta o diagrama entidade-relacionamento, com as tabelas e suas colunas.
-
-\begin{figure}[htbp]
-	\caption{Diagrama entidade-relacionamento}
-	\label{fig:der}
-	\centering
-	\resizebox{\textwidth}{!}{\input{figuras/diagramas/der}}
-	\fonte{Os autores (2026). Chave primária sublinhada; chave estrangeira em itálico. Para legibilidade, foram omitidas as referências de autoria a \texttt{usuario} (\texttt{criado\_por}, \texttt{registrado\_por}, \texttt{preenchido\_por}, \texttt{aprovado\_por}) e o esquema pseudonimizado, formado apenas por visões.}
-\end{figure}
+Informações de estrutura estável, que se relacionam entre si, como usuários, pacientes, atendimentos, consentimentos e tratamentos, ficam em tabelas tradicionais. O conteúdo da ficha, o odontograma e o mapa de palpação, que têm muitos campos e podem mudar com novas versões da ficha, ficam guardados como documentos dentro dessas tabelas (colunas \texttt{JSONB}), conforme a justificativa da \autoref{sec:jsonb}. O diagrama entidade-relacionamento, com as tabelas e suas colunas, está no Apêndice~\ref{apendice:der}.
 
 As medidas mais consultadas, como as escalas de dor e a abertura bucal, são copiadas automaticamente do documento para colunas próprias, que o banco mantém sempre atualizadas (colunas geradas). Assim, elas podem ser pesquisadas rapidamente sem que ninguém precise copiá-las à mão, e o documento continua sendo a única fonte da informação.
 
@@ -154,28 +146,7 @@ O banco é criado e atualizado por uma sequência numerada de comandos SQL, apli
 \section{Segurança e conformidade com a LGPD}
 \label{sec:seguranca}
 
-As medidas de segurança foram definidas a partir do marco legal (\autoref{sec:marco-legal}), das recomendações da literatura \cite{shojaei2024,tertulino2023} e da lista OWASP Top 10 \cite{owasp-top10}. O \autoref{qua:seguranca} relaciona cada requisito à sua implementação.
-
-\begin{quadro}[htbp]
-	\caption{Requisitos de segurança e implementação correspondente}
-	\label{qua:seguranca}
-	\footnotesize
-	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
-		\hline
-		\textbf{Requisito} & \textbf{Implementação} \\ \hline
-		Autenticação & Senhas guardadas de forma irreversível (Argon2id, com os parâmetros recomendados pela OWASP); sessão mantida em um \textit{cookie} protegido, inacessível a scripts e restrito ao próprio site; bloqueio por 15 minutos após cinco tentativas erradas; a mesma mensagem para e-mail inexistente e senha incorreta, para não revelar quem tem cadastro. Um segundo fator de autenticação para professores não foi implementado e fica como trabalho futuro \\ \hline
-		Controle de acesso & Permissões por papel verificadas no servidor e, de novo, no próprio banco, por regras que filtram as linhas de cada tabela conforme o usuário (\textit{Row-Level Security}). O aluno só vê os pacientes que cadastrou ou atendeu, o professor vê todos, e administrador e pesquisador não veem dados clínicos identificados \\ \hline
-		Sigilo na comunicação & HTTPS em todas as comunicações \\ \hline
-		Sigilo no armazenamento & CPF, RG, telefones e endereço gravados cifrados; senhas e chaves do servidor fora do código-fonte. A cifragem do disco do servidor fica a cargo da implantação na UEPG \\ \hline
-		Pseudonimização (LGPD, art.~13) & Uma área separada do banco oferece à análise uma versão dos dados em que o paciente é identificado por um código, gerado com uma chave secreta guardada fora do alcance da aplicação. Essa versão usa faixas etárias em vez da data de nascimento e dias desde a primeira consulta em vez de datas, e omite nome, documentos, contatos e todos os campos de texto livre \\ \hline
-		Integridade do prontuário & O banco impede a alteração de fichas aprovadas e a exclusão de qualquer ficha; correções são registradas como adendos, que preservam a versão anterior \\ \hline
-		Exportação para pesquisa & Somente dos dados pseudonimizados, em planilha CSV, e sempre registrada na auditoria \\ \hline
-		Rastreabilidade & Registro de auditoria de leituras e alterações, que a aplicação não consegue alterar nem apagar \\ \hline
-		Minimização & Descarte do áudio após a transcrição; coleta restrita aos campos da ficha \\ \hline
-		Disponibilidade & Cópias de segurança automáticas, cifradas e testadas periodicamente, previstas para a implantação na UEPG; não fazem parte deste trabalho \\ \hline
-	\end{tabularx}
-	\fonte{Os autores (2026).}
-\end{quadro}
+As medidas de segurança foram definidas a partir do marco legal (\autoref{sec:marco-legal}), das recomendações da literatura \cite{shojaei2024,tertulino2023} e da lista OWASP Top 10 \cite{owasp-top10}. Em resumo, as senhas são guardadas de forma irreversível; as permissões são conferidas no servidor e, de novo, no próprio banco; os dados pessoais são gravados cifrados; a análise recebe apenas dados pseudonimizados; as fichas aprovadas não podem ser alteradas; e todo acesso a prontuários fica registrado em uma trilha de auditoria que a aplicação não consegue apagar. O \autoref{qua:seguranca}, no Apêndice~\ref{apendice:seguranca}, relaciona cada requisito à sua implementação.
 
 \section{Módulo de estruturação da anamnese por IA}
 \label{sec:metodo-ia}
@@ -197,21 +168,7 @@ O módulo transforma o relato do acadêmico em sugestões de preenchimento da fi
 	\fonte{Os autores (2026).}
 \end{figure}
 
-Para cada campo, o modelo devolve o valor e o trecho do relato que o justifica (a evidência), como no \autoref{cod:saida-ia}. Na interface, a organização é pedida uma seção da ficha por vez, na seção em que o acadêmico está trabalhando. O Experimento~A compara essa estratégia com a de enviar o relato para a ficha inteira de uma só vez.
-
-\begin{lstlisting}[caption={Exemplo de sugestão gerada para a seção de história médica}, label=cod:saida-ia]
-{
-  "q3_alergias": {
-    "valor": "Dipirona (manchas na pele).",
-    "evidencia": "tem alergia a dipirona, deu mancha na pele"
-  },
-  "q4_usa_medicamento": {
-    "valor": true,
-    "evidencia": "toma losartana faz uns dois anos"
-  },
-  "q2_historico_cirurgico": { "valor": null, "evidencia": null }
-}
-\end{lstlisting}
+Para cada campo, o modelo devolve o valor e o trecho do relato que o justifica (a evidência), como no exemplo do Apêndice~\ref{apendice:schema} (\autoref{cod:saida-ia}). Na interface, a organização é pedida uma seção da ficha por vez, na seção em que o acadêmico está trabalhando. O Experimento~A compara essa estratégia com a de enviar o relato para a ficha inteira de uma só vez.
 
 O formato da resposta é montado automaticamente a partir do esquema da seção: cada campo vira um par valor e evidência, e o Ollama obriga o modelo a responder exatamente nesse formato. As instruções enviadas ao modelo (o \textit{prompt}) têm duas partes: regras fixas e um guia dos campos, também gerado a partir do esquema, com o título, a orientação de preenchimento e as opções aceitas de cada campo. Assim, uma alteração na ficha chega às instruções do modelo sem edição manual.
 

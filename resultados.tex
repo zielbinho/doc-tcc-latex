@@ -25,7 +25,7 @@ A \autoref{tb:campos-captacao} resume os campos por forma de captação. Os 15 c
 	\fonte{Os autores (2026).}
 \end{table}
 
-A partir desse esquema, foi construído o modelo de dados híbrido da \autoref{fig:der}, que prioriza campos numéricos e categóricos estruturados para viabilizar o acoplamento das ferramentas de análise em Python e Pandas.
+A partir desse esquema, foi construído o modelo de dados híbrido do Apêndice~\ref{apendice:der}, que prioriza campos numéricos e categóricos estruturados para viabilizar o acoplamento das ferramentas de análise em Python e Pandas.
 
 \section{Sistema desenvolvido}
 \label{sec:res-sistema}
@@ -95,25 +95,9 @@ A tela do paciente passou a exibir a evolução clínica calculada a partir das 
 	\fonte{Os autores (2026), com um paciente da coorte sintética.}
 \end{figure}
 
-O administrador gerencia os usuários e consulta a trilha de auditoria (\autoref{fig:tela-auditoria}), que registra cada acesso e alteração com data, usuário, ação e identificador do registro, sem conteúdo clínico nem dados pessoais. A figura mostra também o tema escuro, que o usuário pode escolher no cabeçalho ou deixar acompanhar a configuração do sistema operacional.
+O administrador gerencia os usuários e consulta a trilha de auditoria (\autoref{fig:tela-auditoria}, no Apêndice~\ref{apendice:telas}), que registra cada acesso e alteração com data, usuário, ação e identificador do registro, sem conteúdo clínico nem dados pessoais. A figura mostra também o tema escuro, que o usuário pode escolher no cabeçalho ou deixar acompanhar a configuração do sistema operacional.
 
-\begin{figure}[htbp]
-	\caption{Trilha de auditoria vista pelo administrador, no tema escuro}
-	\label{fig:tela-auditoria}
-	\centering
-	\includegraphics[width=0.85\textwidth]{figuras/17-auditoria-escuro}
-	\fonte{Os autores (2026), com dados sintéticos.}
-\end{figure}
-
-A interface foi verificada também na largura de um \textit{tablet} na vertical, de 768 pixels (\autoref{fig:tela-tablet}). A verificação encontrou um defeito: nessa largura, a barra de seções da ficha alargava a página para mais de 2.000 pixels, obrigando a rolar na horizontal. Corrigido o defeito, um teste de ponta a ponta passou a verificar que as telas principais cabem nessa largura.
-
-\begin{figure}[htbp]
-	\caption{Exame clínico da ficha na largura de um \textit{tablet} (768 pixels)}
-	\label{fig:tela-tablet}
-	\centering
-	\includegraphics[width=0.5\textwidth]{figuras/18-ficha-tablet}
-	\fonte{Os autores (2026), com dados sintéticos.}
-\end{figure}
+A interface foi verificada também na largura de um \textit{tablet} na vertical, de 768 pixels (\autoref{fig:tela-tablet}, no Apêndice~\ref{apendice:telas}). A verificação encontrou um defeito: nessa largura, a barra de seções da ficha alargava a página para mais de 2.000 pixels, obrigando a rolar na horizontal. Corrigido o defeito, um teste de ponta a ponta passou a verificar que as telas principais cabem nessa largura.
 
 \subsection{Atendimento dos requisitos}
 
@@ -169,35 +153,7 @@ A \autoref{tb:benchmark} mostra que o modelo híbrido foi mais rápido nas opera
 
 O modelo relacional foi mais rápido apenas na consulta sobre todas as fichas: 1,7 vez com 10.000 pacientes (0,15~s contra 0,25~s), porque percorre uma tabela pequena e específica, enquanto o híbrido precisa abrir cada documento. Essa diferença pesa pouco no sistema: as análises da coorte são feitas pelo serviço analítico, fora das telas usadas no atendimento, e, se uma consulta desse tipo se tornar frequente, um índice específico pode acelerá-la sem mudar o modelo. O resultado sustenta a escolha do modelo híbrido (\autoref{sec:modelagem}), com a ressalva de que a medição foi feita em um único computador e com dados sintéticos.
 
-Os requisitos de segurança e de integridade são conferidos por testes automatizados, isto é, programas que usam o sistema e verificam se ele se comporta como esperado. Os testes do servidor criam, a cada execução, um banco de dados temporário, fazem pedidos ao servidor como a interface faria e conferem também o que ficou gravado no banco. Os testes da interface verificam cada componente isoladamente e, no navegador Microsoft Edge, os fluxos completos, do login à aprovação da ficha (testes de ponta a ponta). A \autoref{tb:testes} resume os 250 testes da versão atual. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, para que os testes sejam rápidos e deem sempre o mesmo resultado; um teste adicional, executado sob demanda, percorre o ditado no navegador com o modelo real.
-
-\begin{table}[htbp]
-	\caption{Testes automatizados por componente}
-	\label{tb:testes}
-	\footnotesize
-	\centering
-	\begin{tabularx}{\textwidth}{|L{3.8cm}|Y|c|}
-		\hline
-		\textbf{Componente} & \textbf{O que é verificado} & \textbf{Testes} \\ \hline
-		Esquema da ficha & Validade, cobertura das questões 1 a 75, versão do esquema enviada à IA, rótulos, campos condicionais, completude, salvaguardas da IA (evidência presente no relato, coerência entre valor e evidência, limpeza da citação) e conferência da ficha compatível com a política de segurança do navegador & 44 \\ \hline
-		Servidor: acesso & Senha protegida, sessão, bloqueio após tentativas erradas, registro dos acessos & 9 \\ \hline
-		Servidor: permissões & Permissões de cada papel no servidor e diretamente no banco & 10 \\ \hline
-		Servidor: pacientes & Cifragem dos dados pessoais, busca por CPF sem guardá-lo legível, validação, auditoria & 6 \\ \hline
-		Servidor: fichas & Fluxo de revisão, imutabilidade, adendos, medidas copiadas para colunas, odontograma & 7 \\ \hline
-		Servidor: dados para análise & Isolamento do acesso da análise, pseudônimos, ausência de textos livres, tempo desde a última consulta, decisões da IA sem conteúdo & 8 \\ \hline
-		Servidor: painéis analíticos & Papéis com acesso a cada painel e à exportação, permissões na evolução do paciente, envio ao serviço analítico só das seções usadas nos cálculos, arquivo da exportação, auditoria & 9 \\ \hline
-		Servidor: sugestões da IA & Recusa de seções exclusivamente humanas e de fichas fora do rascunho, registro das sugestões e das decisões, falha do modelo, auditoria sem conteúdo & 7 \\ \hline
-		Servidor: segurança & Recusa de acesso sem login ou com sessão falsificada em todas as rotas de dados, tentativas de injeção de SQL na busca e no login, HTML tratado como texto, paciente de outro aluno tratado como inexistente, mensagens de erro sem detalhes do banco, limite de tamanho dos dados enviados, proteção contra armazenamento em cache & 37 \\ \hline
-		Módulo de IA & Montagem das instruções, formato da resposta, descarte pelas salvaguardas (com modelo simulado), métricas e retomada do Experimento~A, distinção entre falha de conexão e resposta inválida & 14 \\ \hline
-		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\ \hline
-		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, ausência de aceite em lote, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\ \hline
-		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, respostas do serviço & 38 \\ \hline
-		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, gravação, revisão, aprovação), restrição de telas por papel e ausência de rolagem horizontal na largura de um \textit{tablet} & 3 \\ \hline
-		Geradores de dados sintéticos & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 24 \\ \hline
-		\textbf{Total} & & \textbf{250} \\ \hline
-	\end{tabularx}
-	\fonte{Os autores (2026).}
-\end{table}
+Os requisitos de segurança e de integridade são conferidos por testes automatizados, isto é, programas que usam o sistema e verificam se ele se comporta como esperado. Os testes do servidor criam, a cada execução, um banco de dados temporário, fazem pedidos ao servidor como a interface faria e conferem também o que ficou gravado no banco. Os testes da interface verificam cada componente isoladamente e, no navegador Microsoft Edge, os fluxos completos, do login à aprovação da ficha (testes de ponta a ponta). A versão atual tem 250 testes, dos quais 37 simulam ataques ao servidor e 38 conferem os cálculos do módulo analítico; a \autoref{tb:testes}, no Apêndice~\ref{apendice:testes}, detalha o que cada grupo verifica. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, para que os testes sejam rápidos e deem sempre o mesmo resultado; um teste adicional, executado sob demanda, percorre o ditado no navegador com o modelo real.
 
 Entre as propriedades verificadas estão as seguintes. Um aluno não consegue ver os pacientes de outro aluno, nem pela interface nem consultando o banco diretamente com as credenciais do sistema. O administrador não vê pacientes, embora consulte a auditoria. Ninguém, nem mesmo quem tem acesso total ao banco, consegue alterar ou excluir uma ficha aprovada. O CPF, o telefone e o endereço não aparecem legíveis no que fica gravado. O serviço analítico não tem acesso aos dados identificados nem à chave dos pseudônimos, e os dados de análise não contêm o nome do paciente nem trechos de texto livre.
 

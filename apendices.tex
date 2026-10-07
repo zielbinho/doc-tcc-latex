@@ -1,5 +1,35 @@
 % ---------------------------------------------------------------------
-\chapter{Trecho do esquema JSON da ficha clínica}
+\chapter{Matriz de controle de acesso}
+\label{apendice:rbac}
+
+\begin{table}[htbp]
+	\caption{Permissões por papel}
+	\label{tb:rbac}
+	\footnotesize
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\textbf{Ação} & \textbf{Aluno} & \textbf{Professor} & \textbf{Pesquisador} & \textbf{Administrador} \\ \hline
+		Cadastrar paciente & Sim & Sim & Não & Não \\ \hline
+		Ver prontuário identificado & Próprios & Sim & Não & Não \\ \hline
+		Preencher ficha (rascunho) & Sim & Sim & Não & Não \\ \hline
+		Usar ditado e IA & Sim & Sim & Não & Não \\ \hline
+		Revisar ficha (devolver ou aprovar) & Não & Sim & Não & Não \\ \hline
+		Registrar adendo em ficha aprovada & Sim & Sim & Não & Não \\ \hline
+		Ver painel do paciente & Próprios & Sim & Não & Não \\ \hline
+		Ver painéis de coorte & Não & Sim & Sim & Não \\ \hline
+		Exportar dados pseudonimizados & Não & Sim & Sim & Não \\ \hline
+		Ver painel de qualidade dos dados & Não & Sim & Sim & Sim \\ \hline
+		Gerenciar usuários & Não & Não & Não & Sim \\ \hline
+		Consultar auditoria & Não & Não & Não & Sim \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026).}
+\end{table}
+
+A matriz foi definida pelos autores a partir das atribuições descritas pela Liga e do TCLE, e corresponde à implementação: cada linha é verificada por testes automatizados na API e, para o acesso aos prontuários, também pelas políticas de \textit{Row-Level Security} no banco. Alterações na matriz, caso a coordenação da Liga as solicite, restringem-se à lista de papéis de cada rota e às políticas correspondentes.
+% ---------------------------------------------------------------------
+
+\chapter{Esquema JSON da ficha clínica e formato das sugestões da IA}
 \label{apendice:schema}
 
 O esquema completo está no repositório do sistema, em \texttt{packages/ficha/schemas}. O \autoref{cod:schema} mostra parte de três seções da ficha inicial. A seção de história médica admite ditado. O questionário de dor admite apenas formulário, de modo que a IA não atribui notas de dor. O diagnóstico do Eixo~I é exclusivamente humano. As definições reutilizáveis, como a escala de 0 a 10, ficam no esquema comum e são referenciadas por \texttt{\$ref}.
@@ -52,9 +82,64 @@ O esquema completo está no repositório do sistema, em \texttt{packages/ficha/s
 }
 \end{lstlisting}
 
-O esquema enviado ao modelo de linguagem é derivado automaticamente deste: as seções exclusivamente humanas são retiradas, e cada campo passa a exigir o valor e o trecho do relato que o justifica, no formato mostrado no \autoref{cod:saida-ia}.
+O esquema enviado ao modelo de linguagem é derivado automaticamente deste: as seções exclusivamente humanas são retiradas, e cada campo passa a exigir o valor e o trecho do relato que o justifica (a evidência). O \autoref{cod:saida-ia} mostra uma sugestão gerada nesse formato para a seção de história médica; campos sem informação no relato voltam vazios.
 
+\begin{lstlisting}[caption={Exemplo de sugestão gerada para a seção de história médica}, label=cod:saida-ia]
+{
+  "q3_alergias": {
+    "valor": "Dipirona (manchas na pele).",
+    "evidencia": "tem alergia a dipirona, deu mancha na pele"
+  },
+  "q4_usa_medicamento": {
+    "valor": true,
+    "evidencia": "toma losartana faz uns dois anos"
+  },
+  "q2_historico_cirurgico": { "valor": null, "evidencia": null }
+}
+\end{lstlisting}
 % ---------------------------------------------------------------------
+
+\chapter{Diagrama entidade-relacionamento}
+\label{apendice:der}
+
+A \autoref{fig:der} apresenta as tabelas do banco de dados e suas relações. As colunas \texttt{JSONB} guardam o conteúdo da ficha, o odontograma e o mapa de palpação (\autoref{sec:modelagem}).
+
+\begin{figure}[htbp]
+	\caption{Diagrama entidade-relacionamento}
+	\label{fig:der}
+	\centering
+	\resizebox{\textwidth}{!}{\input{figuras/diagramas/der}}
+	\fonte{Os autores (2026). Chave primária sublinhada; chave estrangeira em itálico. Para legibilidade, foram omitidas as referências de autoria a \texttt{usuario} (\texttt{criado\_por}, \texttt{registrado\_por}, \texttt{preenchido\_por}, \texttt{aprovado\_por}) e o esquema pseudonimizado, formado apenas por visões.}
+\end{figure}
+% ---------------------------------------------------------------------
+
+\chapter{Requisitos de segurança e implementação}
+\label{apendice:seguranca}
+
+O \autoref{qua:seguranca} detalha as medidas resumidas na \autoref{sec:seguranca}.
+
+\begin{quadro}[htbp]
+	\caption{Requisitos de segurança e implementação correspondente}
+	\label{qua:seguranca}
+	\footnotesize
+	\begin{tabularx}{\textwidth}{|L{3.2cm}|Y|}
+		\hline
+		\textbf{Requisito} & \textbf{Implementação} \\ \hline
+		Autenticação & Senhas guardadas de forma irreversível (Argon2id, com os parâmetros recomendados pela OWASP); sessão mantida em um \textit{cookie} protegido, inacessível a scripts e restrito ao próprio site; bloqueio por 15 minutos após cinco tentativas erradas; a mesma mensagem para e-mail inexistente e senha incorreta, para não revelar quem tem cadastro. Um segundo fator de autenticação para professores não foi implementado e fica como trabalho futuro \\ \hline
+		Controle de acesso & Permissões por papel verificadas no servidor e, de novo, no próprio banco, por regras que filtram as linhas de cada tabela conforme o usuário (\textit{Row-Level Security}). O aluno só vê os pacientes que cadastrou ou atendeu, o professor vê todos, e administrador e pesquisador não veem dados clínicos identificados \\ \hline
+		Sigilo na comunicação & HTTPS em todas as comunicações \\ \hline
+		Sigilo no armazenamento & CPF, RG, telefones e endereço gravados cifrados; senhas e chaves do servidor fora do código-fonte. A cifragem do disco do servidor fica a cargo da implantação na UEPG \\ \hline
+		Pseudonimização (LGPD, art.~13) & Uma área separada do banco oferece à análise uma versão dos dados em que o paciente é identificado por um código, gerado com uma chave secreta guardada fora do alcance da aplicação. Essa versão usa faixas etárias em vez da data de nascimento e dias desde a primeira consulta em vez de datas, e omite nome, documentos, contatos e todos os campos de texto livre \\ \hline
+		Integridade do prontuário & O banco impede a alteração de fichas aprovadas e a exclusão de qualquer ficha; correções são registradas como adendos, que preservam a versão anterior \\ \hline
+		Exportação para pesquisa & Somente dos dados pseudonimizados, em planilha CSV, e sempre registrada na auditoria \\ \hline
+		Rastreabilidade & Registro de auditoria de leituras e alterações, que a aplicação não consegue alterar nem apagar \\ \hline
+		Minimização & Descarte do áudio após a transcrição; coleta restrita aos campos da ficha \\ \hline
+		Disponibilidade & Cópias de segurança automáticas, cifradas e testadas periodicamente, previstas para a implantação na UEPG; não fazem parte deste trabalho \\ \hline
+	\end{tabularx}
+	\fonte{Os autores (2026).}
+\end{quadro}
+% ---------------------------------------------------------------------
+
 \chapter{Roteiro da avaliação de usabilidade}
 \label{apendice:usabilidade}
 
@@ -86,33 +171,58 @@ Aplica-se a versão brasileira do SUS traduzida e adaptada transculturalmente po
 	\item Em que momentos do atendimento você usaria o ditado? Em quais não usaria?
 	\item O que falta no sistema para substituir a ficha em papel na rotina da Liga?
 \end{enumerate}
-
 % ---------------------------------------------------------------------
-\chapter{Matriz de controle de acesso}
-\label{apendice:rbac}
 
-\begin{table}[htbp]
-	\caption{Permissões por papel}
-	\label{tb:rbac}
-	\footnotesize
+\chapter{Telas complementares do sistema}
+\label{apendice:telas}
+
+Este apêndice reúne telas complementares às apresentadas na \autoref{sec:res-sistema}: a trilha de auditoria, vista pelo administrador no tema escuro (\autoref{fig:tela-auditoria}), e o exame clínico da ficha na largura de um \textit{tablet} na vertical (\autoref{fig:tela-tablet}).
+
+\begin{figure}[htbp]
+	\caption{Trilha de auditoria vista pelo administrador, no tema escuro}
+	\label{fig:tela-auditoria}
 	\centering
-	\begin{tabular}{|l|c|c|c|c|}
+	\includegraphics[width=0.85\textwidth]{figuras/17-auditoria-escuro}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+
+\begin{figure}[htbp]
+	\caption{Exame clínico da ficha na largura de um \textit{tablet} (768 pixels)}
+	\label{fig:tela-tablet}
+	\centering
+	\includegraphics[width=0.5\textwidth]{figuras/18-ficha-tablet}
+	\fonte{Os autores (2026), com dados sintéticos.}
+\end{figure}
+% ---------------------------------------------------------------------
+
+\chapter{Testes automatizados}
+\label{apendice:testes}
+\setcounter{table}{0}
+
+\begin{table}[!h]
+	\caption{Testes automatizados por componente}
+	\label{tb:testes}
+	\scriptsize
+	\centering
+	\begin{tabularx}{\textwidth}{|L{3cm}|Y|c|}
 		\hline
-		\textbf{Ação} & \textbf{Aluno} & \textbf{Professor} & \textbf{Pesquisador} & \textbf{Administrador} \\ \hline
-		Cadastrar paciente & Sim & Sim & Não & Não \\ \hline
-		Ver prontuário identificado & Próprios & Sim & Não & Não \\ \hline
-		Preencher ficha (rascunho) & Sim & Sim & Não & Não \\ \hline
-		Usar ditado e IA & Sim & Sim & Não & Não \\ \hline
-		Revisar ficha (devolver ou aprovar) & Não & Sim & Não & Não \\ \hline
-		Registrar adendo em ficha aprovada & Sim & Sim & Não & Não \\ \hline
-		Ver painel do paciente & Próprios & Sim & Não & Não \\ \hline
-		Ver painéis de coorte & Não & Sim & Sim & Não \\ \hline
-		Exportar dados pseudonimizados & Não & Sim & Sim & Não \\ \hline
-		Ver painel de qualidade dos dados & Não & Sim & Sim & Sim \\ \hline
-		Gerenciar usuários & Não & Não & Não & Sim \\ \hline
-		Consultar auditoria & Não & Não & Não & Sim \\ \hline
-	\end{tabular}
+		\textbf{Componente} & \textbf{O que é verificado} & \textbf{Testes} \\ \hline
+		Esquema da ficha & Validade, cobertura das questões 1 a 75, versão do esquema enviada à IA, rótulos, campos condicionais, completude, salvaguardas da IA (evidência presente no relato, coerência entre valor e evidência, limpeza da citação) e conferência da ficha compatível com a política de segurança do navegador & 44 \\ \hline
+		Servidor: acesso & Senha protegida, sessão, bloqueio após tentativas erradas, registro dos acessos & 9 \\ \hline
+		Servidor: permissões & Permissões de cada papel no servidor e diretamente no banco & 10 \\ \hline
+		Servidor: pacientes & Cifragem dos dados pessoais, busca por CPF sem guardá-lo legível, validação, auditoria & 6 \\ \hline
+		Servidor: fichas & Fluxo de revisão, imutabilidade, adendos, medidas copiadas para colunas, odontograma & 7 \\ \hline
+		Servidor: dados para análise & Isolamento do acesso da análise, pseudônimos, ausência de textos livres, tempo desde a última consulta, decisões da IA sem conteúdo & 8 \\ \hline
+		Servidor: painéis analíticos & Papéis com acesso a cada painel e à exportação, permissões na evolução do paciente, envio ao serviço analítico só das seções usadas nos cálculos, arquivo da exportação, auditoria & 9 \\ \hline
+		Servidor: sugestões da IA & Recusa de seções exclusivamente humanas e de fichas fora do rascunho, registro das sugestões e das decisões, falha do modelo, auditoria sem conteúdo & 7 \\ \hline
+		Servidor: segurança & Recusa de acesso sem login ou com sessão falsificada em todas as rotas de dados, tentativas de injeção de SQL na busca e no login, HTML tratado como texto, paciente de outro aluno tratado como inexistente, mensagens de erro sem detalhes do banco, limite de tamanho dos dados enviados, proteção contra armazenamento em cache & 37 \\ \hline
+		Módulo de IA & Montagem das instruções, formato da resposta, descarte pelas salvaguardas (com modelo simulado), métricas e retomada do Experimento~A, distinção entre falha de conexão e resposta inválida & 14 \\ \hline
+		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\ \hline
+		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, ausência de aceite em lote, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\ \hline
+		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, respostas do serviço & 38 \\ \hline
+		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, gravação, revisão, aprovação), restrição de telas por papel e ausência de rolagem horizontal na largura de um \textit{tablet} & 3 \\ \hline
+		Geradores de dados sintéticos & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 24 \\ \hline
+		\textbf{Total} & & \textbf{250} \\ \hline
+	\end{tabularx}
 	\fonte{Os autores (2026).}
 \end{table}
-
-A matriz foi definida pelos autores a partir das atribuições descritas pela Liga e do TCLE, e corresponde à implementação: cada linha é verificada por testes automatizados na API e, para o acesso aos prontuários, também pelas políticas de \textit{Row-Level Security} no banco. Alterações na matriz, caso a coordenação da Liga as solicite, restringem-se à lista de papéis de cada rota e às políticas correspondentes.
