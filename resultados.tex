@@ -30,7 +30,7 @@ A partir desse esquema, foi construído o modelo de dados híbrido do Apêndice~
 \section{Sistema desenvolvido}
 \label{sec:res-sistema}
 
-A interface foi implementada em React e consome exclusivamente a API. As telas foram capturadas automaticamente por um roteiro do Playwright executado sobre o ambiente de desenvolvimento com dados sintéticos, o que torna as figuras reprodutíveis a cada versão do sistema.
+A interface foi implementada em React e consome exclusivamente a API. As telas foram capturadas automaticamente por um roteiro do Playwright executado sobre o ambiente de desenvolvimento com dados fictícios, o que torna as figuras reprodutíveis a cada versão do sistema.
 
 A tela do paciente (\autoref{fig:tela-paciente}) reúne os atendimentos, com o status e a completude de cada ficha, os dados pessoais (decifrados apenas para quem tem acesso), os tratamentos e os consentimentos. Quando não há TCLE registrado, a tela o sinaliza antes da abertura de um atendimento (RF02, RF03).
 
@@ -39,7 +39,7 @@ A tela do paciente (\autoref{fig:tela-paciente}) reúne os atendimentos, com o s
 	\label{fig:tela-paciente}
 	\centering
 	\includegraphics[width=0.85\textwidth]{figuras/03-paciente}
-	\fonte{Os autores (2026), com dados sintéticos.}
+	\fonte{Os autores (2026), com dados fictícios.}
 \end{figure}
 
 O editor da ficha (\autoref{fig:tela-anamnese}) é gerado inteiramente a partir do esquema JSON: cada seção da ficha em papel aparece na navegação lateral com a contagem de campos preenchidos, e cada campo recebe o controle adequado ao seu tipo. Listas de opções viram botões, respostas sim/não viram um par de botões, as escalas de 0 a 10 viram uma régua colorida, e medidas em milímetros viram campos numéricos. O número da questão no papel acompanha cada campo, o que facilita a transição dos alunos habituados à ficha impressa. Campos condicionais, como os medicamentos em uso, só aparecem quando a resposta de controle os torna aplicáveis, e o valor é descartado se a resposta mudar. A validação ocorre no próprio navegador, com o mesmo esquema e as mesmas mensagens usados pela API.
@@ -49,7 +49,7 @@ O editor da ficha (\autoref{fig:tela-anamnese}) é gerado inteiramente a partir 
 	\label{fig:tela-anamnese}
 	\centering
 	\includegraphics[width=0.85\textwidth]{figuras/04-ficha-historia-medica}
-	\fonte{Os autores (2026), com dados sintéticos.}
+	\fonte{Os autores (2026), com dados fictícios.}
 \end{figure}
 
 A palpação muscular e articular (questões 43 a 45) é registrada em um mapa facial esquemático (\autoref{fig:tela-palpacao}), no qual cada sítio muda de cor conforme a intensidade de 0 a 3. Ao lado há uma tabela equivalente, mais precisa ao toque e acessível por teclado. O odontograma (\autoref{fig:tela-odontograma}) segue a numeração FDI. Cada dente tem cinco faces clicáveis, marcadas segundo a ferramenta escolhida, e a face mesial fica sempre voltada para a linha média. Ao selecionar um dente, é possível registrar sua ausência e condições como tratamento endodôntico ou recessão (RF04).
@@ -59,14 +59,14 @@ A palpação muscular e articular (questões 43 a 45) é registrada em um mapa f
 	\label{fig:tela-palpacao}
 	\centering
 	\includegraphics[width=0.8\textwidth]{figuras/06-mapa-palpacao}
-	\fonte{Os autores (2026), com dados sintéticos.}
+	\fonte{Os autores (2026), com dados fictícios.}
 \end{figure}
 \begin{figure}[htbp]
 	\caption{Odontograma com marcações de exemplo}
 	\label{fig:tela-odontograma}
 	\centering
 	\includegraphics[width=0.8\textwidth]{figuras/08-odontograma}
-	\fonte{Os autores (2026), com dados sintéticos.}
+	\fonte{Os autores (2026), com dados fictícios.}
 \end{figure}
 
 As seções de decisão clínica são identificadas na navegação e no cabeçalho da seção como exclusivas do examinador, reforçando para o usuário a restrição que o esquema impõe ao módulo de IA. O professor acompanha as fichas enviadas pelos alunos em uma fila de revisão e, ao abrir cada uma, pode devolvê-la com um comentário ou aprová-la (RF05). Após a aprovação, a ficha é exibida somente para leitura, com a opção de registrar um adendo (RF06).
@@ -78,7 +78,7 @@ Nas seções que admitem ditado, a ficha exibe o painel ``Ditado com IA'' (\auto
 	\label{fig:tela-revisao-ia}
 	\centering
 	\includegraphics[width=0.7\textwidth]{figuras/11-revisao-ia}
-	\fonte{Os autores (2026), com relato sintético e o modelo \texttt{qwen2.5:3b} (\textit{prompt} v4).}
+	\fonte{Os autores (2026), com relato fictício e o modelo \texttt{qwen2.5:3b} (\textit{prompt} v4).}
 \end{figure}
 
 A \autoref{fig:tela-revisao-ia} foi gerada por um teste automatizado de ponta a ponta que executa o modelo real sobre um relato de desenvolvimento. O relato contém, de propósito, um comentário sem relação com a saúde (``a filha passou no vestibular''). O modelo o atribuiu ao campo ``vida pessoal'', com a citação correta, de modo que as salvaguardas não tinham como barrá-lo. O acadêmico o rejeitou na revisão, o que ilustra por que a revisão humana é obrigatória.
@@ -92,7 +92,7 @@ A tela do paciente passou a exibir a evolução clínica calculada a partir das 
 	\label{fig:tela-painel}
 	\centering
 	\includegraphics[width=0.85\textwidth]{figuras/12-evolucao-paciente}
-	\fonte{Os autores (2026), com um paciente da coorte sintética.}
+	\fonte{Os autores (2026), com um paciente da coorte simulada.}
 \end{figure}
 
 O administrador gerencia os usuários e consulta a trilha de auditoria (\autoref{fig:tela-auditoria}, no Apêndice~\ref{apendice:telas}), que registra cada acesso e alteração com data, usuário, ação e identificador do registro, sem conteúdo clínico nem dados pessoais. A figura mostra também o tema escuro, que o usuário pode escolher no cabeçalho ou deixar acompanhar a configuração do sistema operacional.
@@ -121,7 +121,7 @@ O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:
 		RF09 & Atendido & Painel da coorte (\autoref{sec:res-exp-d}) e exportação em planilha, ambos só com dados pseudonimizados e registrados na auditoria \\ \hline
 		RF10 & Atendido & Registro de leituras e alterações de pacientes, fichas, painéis e exportações, que não pode ser alterado nem apagado (\autoref{fig:tela-auditoria}) \\ \hline
 		RNF01 & Atendido & Dados pessoais cifrados, permissões conferidas também no banco, pseudonimização com chave separada e dados de análise sem texto livre; revisão de segurança \\ \hline
-		RNF02 & Parcial & Todos os serviços, inclusive os modelos de IA, executam no próprio servidor, sem chamadas externas; a implantação foi validada em nuvem, com dados sintéticos, mas não no servidor da UEPG \\ \hline
+		RNF02 & Parcial & Todos os serviços, inclusive os modelos de IA, executam no próprio servidor, sem chamadas externas; a implantação foi validada em nuvem, com dados fictícios, mas não no servidor da UEPG \\ \hline
 		RNF03 & Atendido & PostgreSQL, Node.js, React, Python, Ollama, Qwen2.5, Whisper e Caddy, todos gratuitos e de código aberto \\ \hline
 		RNF04 & Atendido & Interface responsiva; telas principais verificadas em 768 pixels por teste automatizado (\autoref{fig:tela-tablet}) \\ \hline
 		RNF05 & Atendido & Seis contêineres instalados por um único arquivo de configuração; implantação validada em uma máquina virtual de nuvem, com HTTPS \\ \hline
@@ -151,7 +151,7 @@ O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:
 
 A \autoref{tb:benchmark} mostra que o modelo híbrido foi mais rápido nas operações do uso clínico. A leitura do prontuário completo de um paciente levou de três a quatro vezes menos tempo, porque o odontograma e a palpação vêm prontos em um único documento, enquanto o modelo relacional precisa juntar dezenas de linhas por atendimento. A gravação de um atendimento levou de 40\% a 45\% menos tempo, pois são três registros gravados contra dezenas de linhas no modelo relacional. O espaço em disco também foi quase a metade. Nos dois tamanhos de base, todas as leituras e gravações ficaram muito abaixo de um décimo de segundo, de modo que nenhum dos modelos seria percebido como lento pelo usuário.
 
-O modelo relacional foi mais rápido apenas na consulta sobre todas as fichas: 1,7 vez com 10.000 pacientes (0,15~s contra 0,25~s), porque percorre uma tabela pequena e específica, enquanto o híbrido precisa abrir cada documento. Essa diferença pesa pouco no sistema: as análises da coorte são feitas pelo serviço analítico, fora das telas usadas no atendimento, e, se uma consulta desse tipo se tornar frequente, um índice específico pode acelerá-la sem mudar o modelo. O resultado sustenta a escolha do modelo híbrido (\autoref{sec:modelagem}), com a ressalva de que a medição foi feita em um único computador e com dados sintéticos.
+O modelo relacional foi mais rápido apenas na consulta sobre todas as fichas: 1,7 vez com 10.000 pacientes (0,15~s contra 0,25~s), porque percorre uma tabela pequena e específica, enquanto o híbrido precisa abrir cada documento. Essa diferença pesa pouco no sistema: as análises da coorte são feitas pelo serviço analítico, fora das telas usadas no atendimento, e, se uma consulta desse tipo se tornar frequente, um índice específico pode acelerá-la sem mudar o modelo. O resultado sustenta a escolha do modelo híbrido (\autoref{sec:modelagem}), com a ressalva de que a medição foi feita em um único computador e com dados fictícios.
 
 Os requisitos de segurança e de integridade são conferidos por testes automatizados, isto é, programas que usam o sistema e verificam se ele se comporta como esperado. Os testes do servidor criam, a cada execução, um banco de dados temporário, fazem pedidos ao servidor como a interface faria e conferem também o que ficou gravado no banco. Os testes da interface verificam cada componente isoladamente e, no navegador Microsoft Edge, os fluxos completos, do login à aprovação da ficha (testes de ponta a ponta). A versão atual tem 250 testes, dos quais 37 simulam ataques ao servidor e 38 conferem os cálculos do módulo analítico; a \autoref{tb:testes}, no Apêndice~\ref{apendice:testes}, detalha o que cada grupo verifica. Nos testes do módulo de IA, o modelo de linguagem é substituído por um simulador que devolve respostas preparadas, para que os testes sejam rápidos e deem sempre o mesmo resultado; um teste adicional, executado sob demanda, percorre o ditado no navegador com o modelo real.
 
@@ -255,7 +255,7 @@ As 30 narrativas de teste resultaram em áudios de 56 a 89~s, com mediana de 72~
 		Silêncio & 4,0\% & 3,6\% & 9,0\% & 0,46 \\ \hline
 		Ruído rosa a 10~dB & 6,2\% & 5,8\% & 14,0\% & 0,65 \\ \hline
 	\end{tabular}
-	\fonte{Os autores (2026), com o Whisper \texttt{small} em CPU (\texttt{int8}) e voz sintética; 30 narrativas por condição.}
+	\fonte{Os autores (2026), com o Whisper \texttt{small} em CPU (\texttt{int8}) e voz gerada por computador; 30 narrativas por condição.}
 \end{table}
 
 A transcrição foi boa nas duas condições: cerca de uma palavra errada a cada 25 no silêncio e a cada 16 com ruído. Os erros, porém, concentraram-se justamente nos termos que importam para a ficha. No relato do caso~1, por exemplo, ``mau hálito'' virou ``mal-álito'', ``apendicite'' virou ``appendicity'' e ``ibuprofeno'' virou ``ibuprofenu'', enquanto o restante do texto teve apenas erros menores, como um artigo a mais. O vocabulário clínico inicial ajuda, mas não cobre todos os termos da anamnese. A transcrição levou menos tempo que a duração do áudio: cerca de 0,5 segundo por segundo de fala no silêncio e 0,65 com ruído, medidos com o modelo de linguagem em execução ao mesmo tempo na máquina.
@@ -274,7 +274,7 @@ O KLM estimou o tempo de preenchimento da ficha inicial pelo formulário, com os
 
 Na palpação, os 18 sítios da ficha de exemplo levariam 49~s pela tabela e 54~s pelo mapa, em que cada clique avança um grau da escala e a dor severa exige quatro cliques. A diferença é pequena, e a vantagem do mapa está na visão de conjunto da distribuição da dor, não na velocidade; quem preferir pode usar a tabela ao lado.
 
-Nas seções que admitem ditado, a digitação dos valores do gabarito levaria, na mediana dos 30 casos de teste, 160~s (de 116 a 219~s). A revisão das sugestões do \texttt{qwen2.5:3b} na estratégia de ficha inteira, com as salvaguardas, incluindo a digitação dos valores omitidos ou errados, levaria 133~s (de 85 a 215~s), uma redução mediana de 15\% na interação com a interface. A esse tempo somam-se, porém, o da fala e o da espera pelo modelo. As narrativas têm de 96 a 153 palavras e, lidas pela voz sintética do Experimento~B, duraram de 56 a 89~s. A estruturação das cinco seções levou de 1,3 a 3,8~minutos no computador de desenvolvimento (\autoref{sec:res-sistema}). Nesse ambiente, portanto, o ditado não reduz o tempo total do registro: reduz a digitação e o esforço de interação, mas acrescenta uma espera maior do que o tempo economizado. O balanço depende da velocidade de inferência do servidor em que o sistema for implantado e de a espera poder ser aproveitada, por exemplo, para seguir com o exame clínico enquanto o modelo trabalha.
+Nas seções que admitem ditado, a digitação dos valores do gabarito levaria, na mediana dos 30 casos de teste, 160~s (de 116 a 219~s). A revisão das sugestões do \texttt{qwen2.5:3b} na estratégia de ficha inteira, com as salvaguardas, incluindo a digitação dos valores omitidos ou errados, levaria 133~s (de 85 a 215~s), uma redução mediana de 15\% na interação com a interface. A esse tempo somam-se, porém, o da fala e o da espera pelo modelo. As narrativas têm de 96 a 153 palavras e, lidas pela voz gerada por computador do Experimento~B, duraram de 56 a 89~s. A estruturação das cinco seções levou de 1,3 a 3,8~minutos no computador de desenvolvimento (\autoref{sec:res-sistema}). Nesse ambiente, portanto, o ditado não reduz o tempo total do registro: reduz a digitação e o esforço de interação, mas acrescenta uma espera maior do que o tempo economizado. O balanço depende da velocidade de inferência do servidor em que o sistema for implantado e de a espera poder ser aproveitada, por exemplo, para seguir com o exame clínico enquanto o modelo trabalha.
 
 \subsection{Avaliação heurística}
 
@@ -305,10 +305,10 @@ A inspeção também registrou pontos fortes. A correspondência com o mundo rea
 \section{Experimento D: validação do módulo analítico}
 \label{sec:res-exp-d}
 
-A coorte sintética, com 150 pacientes e 786 consultas (150 fichas iniciais e 636 fichas de retorno), foi carregada no banco de desenvolvimento pela própria API, com validação pelo esquema, revisão e aprovação de cada ficha. O módulo analítico leu as visões do esquema pseudonimizado com o papel \texttt{lord\_analitico}. O mesmo cálculo feito diretamente sobre os dados do gerador, sem passar pelo banco, produziu resultados idênticos, o que confirma que a persistência, as colunas geradas e as visões não alteram os dados. A \autoref{tb:exp-d} compara os efeitos programados com os recuperados entre os pacientes que concluíram o tratamento.
+A coorte simulada, com 150 pacientes e 786 consultas (150 fichas iniciais e 636 fichas de retorno), foi carregada no banco de desenvolvimento pela própria API, com validação pelo esquema, revisão e aprovação de cada ficha. O módulo analítico leu as visões do esquema pseudonimizado com o papel \texttt{lord\_analitico}. O mesmo cálculo feito diretamente sobre os dados do gerador, sem passar pelo banco, produziu resultados idênticos, o que confirma que a persistência, as colunas geradas e as visões não alteram os dados. A \autoref{tb:exp-d} compara os efeitos programados com os recuperados entre os pacientes que concluíram o tratamento.
 
 \begin{table}[htbp]
-	\caption{Efeitos programados e efeitos recuperados na coorte sintética (pacientes que concluíram o tratamento)}
+	\caption{Efeitos programados e efeitos recuperados na coorte simulada (pacientes que concluíram o tratamento)}
 	\label{tb:exp-d}
 	\footnotesize
 	\centering
@@ -327,7 +327,7 @@ Os três intervalos de confiança de 95\% contêm a redução programada, e as e
 O grupo de orientações de autocuidado, com efeito sorteado de 4,8\%, não apresentou redução significativa ($p = 0{,}082$). Com 41 pacientes e a variabilidade individual programada, um efeito dessa magnitude fica abaixo do que o teste consegue detectar. Esse resultado é coerente com o planejado, e não uma falha: ele mostra que o módulo não produz significância onde o efeito é pequeno demais para a amostra. Considerando todos os pacientes com ao menos um retorno, inclusive os que abandonaram, as reduções estimadas foram menores (36,0\%, 22,3\% e 6,7\%), como esperado, pois quem abandona deixa o acompanhamento antes do efeito pleno.
 
 \begin{figure}[htbp]
-	\caption{Variação da intensidade característica da dor por tratamento na coorte sintética}
+	\caption{Variação da intensidade característica da dor por tratamento na coorte simulada}
 	\label{fig:exp-d-variacao}
 	\centering
 	\includegraphics[width=0.85\textwidth]{figuras/15-exp-d-variacao}
@@ -342,6 +342,6 @@ O grupo de orientações de autocuidado, com efeito sorteado de 4,8\%, não apre
 	\fonte{Os autores (2026).}
 \end{figure}
 
-A \autoref{fig:exp-d-trajetoria} mostra a forma programada das trajetórias: queda até o 90.º dia e estabilidade depois. O painel da coorte do sistema mostra o mesmo resultado e apresenta ainda a prevalência das características relatadas, a distribuição dos diagnósticos do Eixo~I e as correlações na linha de base. Como as medidas da coorte sintética foram sorteadas de forma independente, as correlações de Spearman ficaram próximas de zero ($|\rho| \leq 0{,}15$), outro resultado coerente com a construção dos dados.
+A \autoref{fig:exp-d-trajetoria} mostra a forma programada das trajetórias: queda até o 90.º dia e estabilidade depois. O painel da coorte do sistema mostra o mesmo resultado e apresenta ainda a prevalência das características relatadas, a distribuição dos diagnósticos do Eixo~I e as correlações na linha de base. Como as medidas da coorte simulada foram sorteadas de forma independente, as correlações de Spearman ficaram próximas de zero ($|\rho| \leq 0{,}15$), outro resultado coerente com a construção dos dados.
 
 Por construção, esses números validam o cálculo dos indicadores e dos testes, e não dizem nada sobre a eficácia real dos tratamentos da Liga.
