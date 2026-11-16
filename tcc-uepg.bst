@@ -443,7 +443,11 @@ FUNCTION {write.entry.verbatim}
 if$}
 
 STRINGS  { bibinfo}
-INTEGERS { nameptr namesleft numnames }
+INTEGERS { nameptr namesleft numnames maiusculas }
+
+% Sobrenomes em maiúsculas na lista de referências (NBR 6023), mas não na chave de ordenação
+FUNCTION {em.maiusculas}
+{ maiusculas { "\MakeUppercase{" swap$ * "}" * } 'skip$ if$ }
 
 FUNCTION {get.person} {"{vv }{ll}{, jj}{, ff}" format.name$}
 FUNCTION {get.last.name} {#1 "{ll}" format.name$}
@@ -472,7 +476,7 @@ FUNCTION {format.single.name}
 {
 s nameptr get.person 'r :=
 abnt.last.names
-  {r #1 "{ll}{ jj}" format.name$  "t" change.case$
+  {r #1 "{ll}{ jj}" format.name$ em.maiusculas
    abnt.full.initials
     {r #1 "{, ff}{ vv}" format.name$ *}
     {r #1 "{, f.}{ vv}" format.name$ *}
@@ -480,7 +484,7 @@ abnt.last.names
   {%r #1 is.composed.von {r #1 recompose.name 'r :=} 'skip$ if$
    r #1 "{ll}" format.name$
    #1 "{ll}" format.name$
-   r #1 "{ jj}" format.name$ *  "t" change.case$
+   r #1 "{ jj}" format.name$ * em.maiusculas
    abnt.full.initials
     {r #1 "{, ff}{ vv}" format.name$ *
      r #1 "{ll}" format.name$
@@ -1099,7 +1103,7 @@ FUNCTION {format.year}
    { "campo year vazio ou faltando em " cite$ *
     abnt.missing.year {" (vou colocar [s.d.])" *} 'skip$ if$ warning$
     abnt.missing.year {", " } {""} if$ bbl.missing.year *}
-    {year n.dashify "year" bibinfo.check}
+    {year n.dashify extra.label * "year" bibinfo.check}
 if$
 }
 
@@ -1164,7 +1168,7 @@ FUNCTION {compare.authorship}
 FUNCTION {format.author.or.organization}
 {  author empty$
     { organization empty$ 'skip$
-      { organization  "t" change.case$ "organization"  bibinfo.check output}
+      { "\MakeUppercase{" organization * "}" * "organization"  bibinfo.check output}
       if$}
     { format.authors output.nonnull }
   if$
@@ -1175,7 +1179,7 @@ FUNCTION {format.author.or.organization}
 FUNCTION {format.editor.or.organization}
 {  editor empty$
     { organization empty$ 'skip$
-      { organization  "t" change.case$ "organization"  bibinfo.check output}
+      { "\MakeUppercase{" organization * "}" * "organization"  bibinfo.check output}
       if$}
     { format.editors output.nonnull }
   if$
@@ -1187,7 +1191,7 @@ FUNCTION {format.author.or.editor.or.organization}
     { editor empty$
         { organization empty$
 	    'skip$
-            { organization  "t" change.case$ "organization"  bibinfo.check output}
+            { "\MakeUppercase{" organization * "}" * "organization"  bibinfo.check output}
           if$}
         { format.editors output.nonnull }
       if$}
@@ -2014,7 +2018,7 @@ if$
 }
 
 FUNCTION {presort}
-{ 
+{ #0 'maiusculas :=
  any.sort
   "    " * year field.or.null sortify * "    " * title field.or.null
   sort.format.title * #1 entry.max$ substring$
@@ -2022,6 +2026,7 @@ FUNCTION {presort}
   abnt.alf 'skip$ {pop$ ""} if$ 'sort.key$ :=
   year empty$ {""} {year} if$ 'year.label :=
   calc.extended.label
+  #1 'maiusculas :=
 }
 
 FUNCTION {set.default.abnt.variables}

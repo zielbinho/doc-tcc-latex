@@ -14,9 +14,9 @@ Este apêndice detalha as normas resumidas na \autoref{sec:marco-legal}, que ori
 \chapter{Matriz de controle de acesso}
 \label{apendice:rbac}
 
-\begin{table}[htbp]
+\begin{quadro}[htbp]
 	\caption{Permissões por papel}
-	\label{tb:rbac}
+	\label{qua:rbac}
 	\footnotesize
 	\centering
 	\begin{tabular}{|l|c|c|c|c|}
@@ -36,7 +36,7 @@ Este apêndice detalha as normas resumidas na \autoref{sec:marco-legal}, que ori
 		Consultar auditoria & Não & Não & Não & Sim \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026).}
-\end{table}
+\end{quadro}
 
 A matriz foi definida pelos autores a partir das atribuições descritas pela Liga e do TCLE, e corresponde à implementação: cada linha é verificada por testes automatizados na API e, para o acesso aos prontuários, também pelas políticas de \textit{Row-Level Security} no banco. Alterações na matriz, caso a coordenação da Liga as solicite, restringem-se à lista de papéis de cada rota e às políticas correspondentes.
 % ---------------------------------------------------------------------
@@ -209,31 +209,30 @@ Este apêndice reúne telas complementares às apresentadas na \autoref{sec:res-
 
 \chapter{Testes automatizados}
 \label{apendice:testes}
-\setcounter{table}{0}
 
 \begin{table}[!h]
 	\caption{Testes automatizados por componente}
 	\label{tb:testes}
 	\scriptsize
 	\centering
-	\begin{tabularx}{\textwidth}{|L{3cm}|Y|c|}
+	\begin{tabularx}{\textwidth}{L{3cm}Yc}
 		\hline
 		\textbf{Componente} & \textbf{O que é verificado} & \textbf{Testes} \\ \hline
-		Esquema da ficha & Validade, cobertura das questões 1 a 75, versão do esquema enviada à IA, rótulos, campos condicionais, completude, salvaguardas da IA (evidência presente no relato, coerência entre valor e evidência, limpeza da citação) e conferência da ficha compatível com a política de segurança do navegador & 44 \\ \hline
-		Servidor: acesso & Senha protegida, sessão, bloqueio após tentativas erradas, registro dos acessos & 9 \\ \hline
-		Servidor: permissões & Permissões de cada papel no servidor e diretamente no banco & 10 \\ \hline
-		Servidor: pacientes & Cifragem dos dados pessoais, busca por CPF sem guardá-lo legível, validação, auditoria & 6 \\ \hline
-		Servidor: fichas & Fluxo de revisão, imutabilidade, adendos, medidas copiadas para colunas, odontograma & 7 \\ \hline
-		Servidor: dados para análise & Isolamento do acesso da análise, pseudônimos, ausência de textos livres, tempo desde a última consulta, decisões da IA sem conteúdo & 8 \\ \hline
-		Servidor: painéis analíticos & Papéis com acesso a cada painel e à exportação, permissões na evolução do paciente, envio ao serviço analítico só das seções usadas nos cálculos, arquivo da exportação, auditoria & 9 \\ \hline
-		Servidor: sugestões da IA & Recusa de seções exclusivamente humanas e de fichas fora do rascunho, registro das sugestões e das decisões, falha do modelo, auditoria sem conteúdo & 7 \\ \hline
-		Servidor: segurança & Recusa de acesso sem login ou com sessão falsificada em todas as rotas de dados, tentativas de injeção de SQL na busca e no login, HTML tratado como texto, paciente de outro aluno tratado como inexistente, mensagens de erro sem detalhes do banco, limite de tamanho dos dados enviados, proteção contra armazenamento em cache & 37 \\ \hline
-		Módulo de IA & Montagem das instruções, formato da resposta, descarte pelas salvaguardas (com modelo simulado), métricas e retomada do Experimento~A, distinção entre falha de conexão e resposta inválida & 14 \\ \hline
-		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\ \hline
-		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, ausência de aceite em lote, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\ \hline
-		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, respostas do serviço & 38 \\ \hline
-		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, gravação, revisão, aprovação), restrição de telas por papel e ausência de rolagem horizontal na largura de um \textit{tablet} & 3 \\ \hline
-		Geradores de dados fictícios & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 24 \\ \hline
+		Esquema da ficha & Validade, cobertura das questões 1 a 75, versão do esquema enviada à IA, rótulos, campos condicionais, completude, salvaguardas da IA (evidência presente no relato, coerência entre valor e evidência, limpeza da citação) e conferência da ficha compatível com a política de segurança do navegador & 44 \\
+		Servidor: acesso & Senha protegida, sessão, bloqueio após tentativas erradas, registro dos acessos & 9 \\
+		Servidor: permissões & Permissões de cada papel no servidor e diretamente no banco & 10 \\
+		Servidor: pacientes & Cifragem dos dados pessoais, busca por CPF sem guardá-lo legível, validação, auditoria & 6 \\
+		Servidor: fichas & Fluxo de revisão, imutabilidade, adendos, medidas copiadas para colunas, odontograma & 7 \\
+		Servidor: dados para análise & Isolamento do acesso da análise, pseudônimos, ausência de textos livres, tempo desde a última consulta, decisões da IA sem conteúdo & 8 \\
+		Servidor: painéis analíticos & Papéis com acesso a cada painel e à exportação, permissões na evolução do paciente, envio ao serviço analítico só das seções usadas nos cálculos, arquivo da exportação, auditoria & 9 \\
+		Servidor: sugestões da IA & Recusa de seções exclusivamente humanas e de fichas fora do rascunho, registro das sugestões e das decisões, falha do modelo, auditoria sem conteúdo & 7 \\
+		Servidor: segurança & Recusa de acesso sem login ou com sessão falsificada em todas as rotas de dados, tentativas de injeção de SQL na busca e no login, HTML tratado como texto, paciente de outro aluno tratado como inexistente, mensagens de erro sem detalhes do banco, limite de tamanho dos dados enviados, proteção contra armazenamento em cache & 37 \\
+		Módulo de IA & Montagem das instruções, formato da resposta, descarte pelas salvaguardas (com modelo simulado), métricas e retomada do Experimento~A, distinção entre falha de conexão e resposta inválida & 14 \\
+		Serviço de transcrição & Idioma e vocabulário clínico enviados ao modelo, áudio mantido só em memória, recusa de arquivos que não são áudio, vazios, grandes demais ou ilegíveis & 6 \\
+		Interface: componentes & Controle por tipo de campo, campos condicionais, erros, mapa de palpação, odontograma, painel de ditado (aceitar, rejeitar, ausência de aceite em lote, edição posterior) e painéis analíticos (ordem e cores dos grupos, filtro, acesso do administrador) & 28 \\
+		Módulo analítico & GCPS e seus pontos de corte, palpação, variação da dor, testes estatísticos e tamanho de efeito sobre uma coorte de resultado conhecido, respostas do serviço & 38 \\
+		Interface: ponta a ponta & Fluxo completo da ficha no navegador (cadastro, preenchimento, gravação, revisão, aprovação), restrição de telas por papel e ausência de rolagem horizontal na largura de um \textit{tablet} & 3 \\
+		Geradores de dados fictícios & Casos: validade, reprodutibilidade, coerência clínica e compatibilidade com o sexo; coorte: fichas de retorno válidas, alocação equilibrada, datas, abandono; recuperação dos efeitos programados & 24 \\
 		\textbf{Total} & & \textbf{250} \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026).}

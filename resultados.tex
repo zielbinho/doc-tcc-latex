@@ -14,12 +14,12 @@ A \autoref{tb:campos-captacao} resume os campos por forma de captação. Os 15 c
 	\label{tb:campos-captacao}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|c|c|}
+	\begin{tabular}{lcc}
 		\hline
 		\textbf{Forma de captação} & \textbf{Seções} & \textbf{Campos} \\ \hline
-		Exclusivamente humana & 4 & 15 \\ \hline
-		Somente formulário & 1 & 26 \\ \hline
-		Formulário, componentes visuais ou ditado com IA & 10 & 103 \\ \hline
+		Exclusivamente humana & 4 & 15 \\
+		Somente formulário & 1 & 26 \\
+		Formulário, componentes visuais ou ditado com IA & 10 & 103 \\
 		\textbf{Total} & \textbf{15} & \textbf{144} \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026).}
@@ -137,13 +137,13 @@ O \autoref{qua:atendimento-requisitos} relaciona cada requisito do \autoref{qua:
 	\label{tb:benchmark}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{lcccc}
 		\hline
-		\multirow{2}{*}{\textbf{Métrica}} & \multicolumn{2}{c|}{\textbf{1.000 pacientes}} & \multicolumn{2}{c|}{\textbf{10.000 pacientes}} \\ \cline{2-5}
+		\multirow{2}{*}{\textbf{Métrica}} & \multicolumn{2}{c}{\textbf{1.000 pacientes}} & \multicolumn{2}{c}{\textbf{10.000 pacientes}} \\ \cline{2-5}
 		& \textbf{Híbrido} & \textbf{Relacional} & \textbf{Híbrido} & \textbf{Relacional} \\ \hline
-		Leitura do prontuário (ms) & 0,15 (0,35) & 0,58 (1,18) & 0,28 (0,79) & 0,87 (1,78) \\ \hline
-		Gravação de um atendimento (ms) & 8,8 (14,2) & 16,0 (22,3) & 10,9 (16,3) & 18,4 (26,0) \\ \hline
-		Consulta analítica (ms) & 29,0 & 8,6 & 254,0 & 151,5 \\ \hline
+		Leitura do prontuário (ms) & 0,15 (0,35) & 0,58 (1,18) & 0,28 (0,79) & 0,87 (1,78) \\
+		Gravação de um atendimento (ms) & 8,8 (14,2) & 16,0 (22,3) & 10,9 (16,3) & 18,4 (26,0) \\
+		Consulta analítica (ms) & 29,0 & 8,6 & 254,0 & 151,5 \\
 		Espaço em disco (MB) & 8,8 & 15,6 & 72,6 & 131,0 \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026). Leitura e gravação: mediana de 300 repetições, com o percentil 95 entre parênteses; consulta analítica: mediana de 10 execuções.}
@@ -166,12 +166,12 @@ Os demais testes de ataque passaram sem alterações no código: a busca de paci
 	\label{tb:zap}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{lcccc}
 		\hline
 		\textbf{Varredura} & \textbf{Alto} & \textbf{Médio} & \textbf{Baixo} & \textbf{Informativo} \\ \hline
-		Passiva, antes das correções & 0 & 1 & 3 & 4 \\ \hline
-		Passiva, depois das correções & 0 & 0 & 0 & 4 \\ \hline
-		Completa (ativa), 140 regras & 0 & 1 & 0 & 4 \\ \hline
+		Passiva, antes das correções & 0 & 1 & 3 & 4 \\
+		Passiva, depois das correções & 0 & 0 & 0 & 4 \\
+		Completa (ativa), 140 regras & 0 & 1 & 0 & 4 \\
 		API (ativa), 118 regras & 0 & 0 & 1 & 3 \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026), com o OWASP ZAP sobre a implantação em nuvem.}
@@ -194,12 +194,12 @@ Os 30 casos de teste foram processados pelo \texttt{qwen2.5:3b}, com a versão~4
 	\footnotesize
 	\centering
 	\setlength{\tabcolsep}{4pt}
-	\begin{tabular}{|l|l|c|c|c|c|c|c|c|}
+	\begin{tabular}{llccccccc}
 		\hline
 		\textbf{Estratégia} & \textbf{Saída} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{F1 fechados} & \textbf{F1 texto} & \textbf{Alucinação} & \textbf{Omissão} \\ \hline
-		Por seção & Bruta & 0,56 & 0,61 & 0,58 & 0,74 & 0,46 & 0,69 & 0,09 \\ \hline
-		Por seção & Salvaguardas & 0,58 & 0,51 & 0,54 & 0,69 & 0,42 & 0,53 & 0,26 \\ \hline
-		Ficha inteira & Bruta & 0,63 & 0,55 & 0,59 & 0,70 & 0,50 & 0,32 & 0,20 \\ \hline
+		Por seção & Bruta & 0,56 & 0,61 & 0,58 & 0,74 & 0,46 & 0,69 & 0,09 \\
+		Por seção & Salvaguardas & 0,58 & 0,51 & 0,54 & 0,69 & 0,42 & 0,53 & 0,26 \\
+		Ficha inteira & Bruta & 0,63 & 0,55 & 0,59 & 0,70 & 0,50 & 0,32 & 0,20 \\
 		Ficha inteira & Salvaguardas & 0,65 & 0,47 & 0,55 & 0,63 & 0,48 & 0,25 & 0,34 \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026), com o modelo \texttt{qwen2.5:3b}. F1 texto: medida automática aproximada (sobreposição de palavras).}
@@ -214,14 +214,14 @@ As salvaguardas funcionaram na direção esperada: reduziram a alucinação (de 
 	\label{tb:exp-a-secoes}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{lcccc}
 		\hline
-		\multirow{2}{*}{\textbf{Seção}} & \multicolumn{2}{c|}{\textbf{Por seção}} & \multicolumn{2}{c|}{\textbf{Ficha inteira}} \\ \cline{2-5}
+		\multirow{2}{*}{\textbf{Seção}} & \multicolumn{2}{c}{\textbf{Por seção}} & \multicolumn{2}{c}{\textbf{Ficha inteira}} \\ \cline{2-5}
 		& \textbf{Bruta} & \textbf{Salvaguardas} & \textbf{Bruta} & \textbf{Salvaguardas} \\ \hline
-		Queixa principal & 0,50 & 0,47 & 0,50 & 0,50 \\ \hline
-		História médica & 0,52 & 0,49 & 0,55 & 0,51 \\ \hline
-		História odontológica & 0,74 & 0,69 & 0,72 & 0,69 \\ \hline
-		Prótese & 0,60 & 0,56 & 0,60 & 0,46 \\ \hline
+		Queixa principal & 0,50 & 0,47 & 0,50 & 0,50 \\
+		História médica & 0,52 & 0,49 & 0,55 & 0,51 \\
+		História odontológica & 0,74 & 0,69 & 0,72 & 0,69 \\
+		Prótese & 0,60 & 0,56 & 0,60 & 0,46 \\
 		Observações & 0,00 & 0,00 & 0,19 & 0,22 \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026), com o modelo \texttt{qwen2.5:3b} e 30 casos de teste.}
@@ -249,16 +249,38 @@ As 30 narrativas de teste resultaram em áudios de 56 a 89~s, com mediana de 72~
 	\label{tb:exp-b}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|c|c|c|c|}
+	\begin{tabular}{lcccc}
 		\hline
 		\textbf{Condição} & \textbf{WER média} & \textbf{WER mediana} & \textbf{Pior caso} & \textbf{Fator de tempo real} \\ \hline
-		Silêncio & 4,0\% & 3,6\% & 9,0\% & 0,46 \\ \hline
+		Silêncio & 4,0\% & 3,6\% & 9,0\% & 0,46 \\
 		Ruído rosa a 10~dB & 6,2\% & 5,8\% & 14,0\% & 0,65 \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026), com o Whisper \texttt{small} em CPU (\texttt{int8}) e voz gerada por computador; 30 narrativas por condição.}
 \end{table}
 
-A transcrição foi boa nas duas condições: cerca de uma palavra errada a cada 25 no silêncio e a cada 16 com ruído. Os erros, porém, concentraram-se justamente nos termos que importam para a ficha. No relato do caso~1, por exemplo, ``mau hálito'' virou ``mal-álito'', ``apendicite'' virou ``appendicity'' e ``ibuprofeno'' virou ``ibuprofenu'', enquanto o restante do texto teve apenas erros menores, como um artigo a mais. O vocabulário clínico inicial ajuda, mas não cobre todos os termos da anamnese. A transcrição levou menos tempo que a duração do áudio: cerca de 0,5 segundo por segundo de fala no silêncio e 0,65 com ruído, medidos com o modelo de linguagem em execução ao mesmo tempo na máquina.
+A transcrição foi boa nas duas condições: cerca de uma palavra errada a cada 25 no silêncio e a cada 16 com ruído. Para verificar onde estavam os erros, cada transcrição foi alinhada palavra a palavra com a sua narrativa. Foram 103 trechos divergentes no silêncio e 157 com ruído, quase todos substituições (89 e 140). A \autoref{tb:exp-b-erros} mostra os mais frequentes. O mais comum, ``há'' transcrito como ``a'', não altera o sentido do relato. Os demais, porém, recaem justamente sobre os termos que importam para a ficha: doenças, medicamentos, procedimentos e itens de higiene, como ``hipotireoidismo'', ``omeprazol'', ``cesárea'' e ``enxaguante''. No relato do caso~1, por exemplo, ``mau hálito'' virou ``mal-álito'', ``apendicite'' virou ``appendicity'' e ``ibuprofeno'' virou ``ibuprofenu''. O ruído afetou mais os termos pouco comuns, como ``interdental'' e ``enxaguante''. O vocabulário clínico inicial ajuda, mas não cobre todos os termos da anamnese, e erros como esses são a razão de o texto transcrito ser exibido para correção antes do envio ao modelo.
+
+\begin{table}[htbp]
+	\caption{Erros de transcrição mais frequentes nas 30 narrativas de teste}
+	\label{tb:exp-b-erros}
+	\footnotesize
+	\centering
+	\begin{tabular}{llcc}
+		\hline
+		\textbf{Termo da narrativa} & \textbf{Como foi transcrito} & \textbf{Silêncio} & \textbf{Ruído} \\ \hline
+		há & a & 20 & 20 \\
+		mau hálito & mal álito, mal álido & 8 & 8 \\
+		ex-fumante & esfumante, escumante & 7 & 7 \\
+		hipotireoidismo & hipotileoidismo, hipotiroidismo & 6 & 3 \\
+		ao dentista & alentista, audentista & 5 & 5 \\
+		omeprazol & o metro a sol, o meprasol & 4 & 4 \\
+		cesárea & cesária, precisária & 3 & 3 \\
+		enxaguante & em chagontia, enxagante & 2 & 12 \\
+		ibuprofeno & ibuprofenu, ibuprofenina & 2 & 2 \\
+		interdental & intervental, em perdentão & 0 & 9 \\ \hline
+	\end{tabular}
+	\fonte{Os autores (2026). Número de trechos com o erro em cada condição, após a mesma normalização da WER.}
+\end{table} A transcrição levou menos tempo que a duração do áudio: cerca de 0,5 segundo por segundo de fala no silêncio e 0,65 com ruído, medidos com o modelo de linguagem em execução ao mesmo tempo na máquina.
 
 Nos 10 casos em que as transcrições da condição silenciosa passaram pela estruturação, o $F_1$ da resposta bruta caiu de 0,59, com o texto original, para 0,56, com o áudio transcrito. Com as salvaguardas, a queda foi maior, de 0,56 para 0,47, e a omissão subiu de 33\% para 45\%. A razão é que a verificação literal da evidência é sensível aos erros de transcrição e às pequenas variações que eles provocam na resposta do modelo: os descartes por evidência não encontrada no relato passaram de 7, com o texto, para 15, com o áudio. Os números devem ser lidos com cautela, pois a amostra é pequena, e um mesmo caso pode variar bastante com pequenas mudanças no texto de entrada: no caso~1, a transcrição praticamente idêntica ao original levou a um resultado bem pior. Ainda assim, indicam que o áudio acrescenta uma perda moderada, que recai principalmente sobre as salvaguardas.
 
@@ -285,16 +307,16 @@ A \autoref{tb:heuristica} lista os problemas encontrados na inspeção. Nenhum f
 	\label{tb:heuristica}
 	\footnotesize
 	\centering
-	\begin{tabularx}{\textwidth}{|L{2.9cm}|Y|c|L{3.4cm}|}
+	\begin{tabularx}{\textwidth}{L{2.9cm}YcL{3.4cm}}
 		\hline
 		\textbf{Heurística} & \textbf{Problema} & \textbf{Sev.} & \textbf{Situação} \\ \hline
-		Prevenção de erros & O botão ``Aceitar as pendentes'' aplicava todas as sugestões da IA de uma vez, sem que as evidências fossem lidas & 3 & Corrigido: botão removido; cada sugestão exige decisão própria \\ \hline
-		Prevenção de erros & A ficha podia ser enviada para revisão com campos obrigatórios em branco, sem aviso & 2 & Corrigido: confirmação com o número de campos faltantes \\ \hline
-		Consistência e padrões & A barra de completude mostrava 100\% enquanto a navegação exibia seções incompletas (por exemplo, 23/26), porque a barra considera só os obrigatórios & 2 & Corrigido: rótulo ``dos obrigatórios'' e cálculo durante a edição \\ \hline
-		Visibilidade do estado do sistema & A espera pelo modelo de linguagem, de um a quatro minutos, é indicada apenas por ``O modelo local está analisando'', sem estimativa de tempo nem progresso & 2 & Pendente \\ \hline
-		Controle e liberdade do usuário & Não há salvamento automático; o rascunho é salvo pelo botão ou por Ctrl+S, e a perda é evitada apenas pelo aviso ao sair da página & 2 & Pendente \\ \hline
-		Estética e \textit{design} minimalista & As medidas do estágio do ruído (questão 40) são exibidas mesmo quando não há ruído, e a mesma nota sobre milímetros se repete em todos os campos de medida & 1 & Pendente \\ \hline
-		Flexibilidade e eficiência de uso & No mapa de palpação, a dor severa exige quatro cliques no mesmo sítio & 1 & Mitigado pela tabela equivalente \\ \hline
+		Prevenção de erros & O botão ``Aceitar as pendentes'' aplicava todas as sugestões da IA de uma vez, sem que as evidências fossem lidas & 3 & Corrigido: botão removido; cada sugestão exige decisão própria \\
+		Prevenção de erros & A ficha podia ser enviada para revisão com campos obrigatórios em branco, sem aviso & 2 & Corrigido: confirmação com o número de campos faltantes \\
+		Consistência e padrões & A barra de completude mostrava 100\% enquanto a navegação exibia seções incompletas (por exemplo, 23/26), porque a barra considera só os obrigatórios & 2 & Corrigido: rótulo ``dos obrigatórios'' e cálculo durante a edição \\
+		Visibilidade do estado do sistema & A espera pelo modelo de linguagem, de um a quatro minutos, é indicada apenas por ``O modelo local está analisando'', sem estimativa de tempo nem progresso & 2 & Pendente \\
+		Controle e liberdade do usuário & Não há salvamento automático; o rascunho é salvo pelo botão ou por Ctrl+S, e a perda é evitada apenas pelo aviso ao sair da página & 2 & Pendente \\
+		Estética e \textit{design} minimalista & As medidas do estágio do ruído (questão 40) são exibidas mesmo quando não há ruído, e a mesma nota sobre milímetros se repete em todos os campos de medida & 1 & Pendente \\
+		Flexibilidade e eficiência de uso & No mapa de palpação, a dor severa exige quatro cliques no mesmo sítio & 1 & Mitigado pela tabela equivalente \\
 		Ajuda e documentação & Não há ajuda contextual nem manual; as orientações se limitam às descrições dos campos & 1 & Pendente \\ \hline
 	\end{tabularx}
 	\fonte{Os autores (2026). Severidade de 0 a 4 \cite{nielsenmack1994}.}
@@ -312,11 +334,11 @@ A coorte simulada, com 150 pacientes e 786 consultas (150 fichas iniciais e 636 
 	\label{tb:exp-d}
 	\footnotesize
 	\centering
-	\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+	\begin{tabular}{lcccccccc}
 		\hline
 		\textbf{Grupo} & \textbf{Progr.} & \textbf{Sorteada} & \textbf{$n$} & \textbf{Estimada (IC 95\%)} & \textbf{$p$} & \textbf{$r$} & \textbf{$\geq$30\%} & \textbf{$\geq$50\%} \\ \hline
-		Placa & 40\% & 37,2\% & 41 & 38,0\% (32,6 a 43,5) & $<$0,001 & 1,00 & 68\% & 22\% \\ \hline
-		Laser & 25\% & 26,7\% & 37 & 24,0\% (18,2 a 29,8) & $<$0,001 & 0,96 & 43\% & 5\% \\ \hline
+		Placa & 40\% & 37,2\% & 41 & 38,0\% (32,6 a 43,5) & $<$0,001 & 1,00 & 68\% & 22\% \\
+		Laser & 25\% & 26,7\% & 37 & 24,0\% (18,2 a 29,8) & $<$0,001 & 0,96 & 43\% & 5\% \\
 		Orientações & 10\% & 4,8\% & 41 & 5,2\% ($-$0,4 a 10,8) & 0,082 & 0,32 & 7\% & 0\% \\ \hline
 	\end{tabular}
 	\fonte{Os autores (2026). Placa: placa oclusal; Laser: laser de baixa intensidade; Orientações: orientações de autocuidado. Progr.: redução programada; Sorteada: média dos efeitos individuais sorteados para os pacientes que concluíram; $p$: teste de Wilcoxon pareado; $r$: correlação rank-bisserial; $\geq$30\% e $\geq$50\%: proporção de pacientes com redução de pelo menos 30\% e 50\%.}
